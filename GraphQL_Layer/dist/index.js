@@ -6,22 +6,17 @@ import { employeResolver } from './resolver/employee.js';
 import { leaveResolver } from './resolver/leaves.js';
 import EmployeeAPI from './api/employee.js';
 const resolvers = mergeResolvers([employeResolver, leaveResolver]);
-const server = new ApolloServer({
-    typeDefs,
-    resolvers
+const server = new ApolloServer({ typeDefs, resolvers });
+const { url } = await startStandaloneServer(server, {
+    listen: { port: 4000 },
+    context: async ({ req, res }) => {
+        const { cache } = server;
+        const token = req.headers.authorization || '';
+        return {
+            dataSources: {
+                EmployeeAPI: new EmployeeAPI({ cache, token }),
+            }
+        };
+    },
 });
-async function startApolloServer() {
-    const server = new ApolloServer({ typeDefs, resolvers });
-    const { url } = await startStandaloneServer(server, {
-        context: async ({ req }) => {
-            return {
-                dataSources: {
-                    EmployeeAPI: new EmployeeAPI(),
-                },
-            };
-        },
-        listen: { port: 4000 },
-    });
-    console.log(`GraphQL server running at: ${url}`);
-}
-startApolloServer();
+console.log(`Server ready at: ${url}`);
