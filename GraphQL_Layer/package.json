@@ -1,14 +1,19 @@
-{"type": "module",
-"scripts": {
-  "compile": "tsc -w",
-  "start": "npm run compile && node dist/index.js"
-},
-  "dependencies": {
-    "@apollo/server": "^4.10.0",
-    "graphql": "^16.8.1"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.24",
-    "typescript": "^5.3.3"
-  }
+{
+    "type": "module",
+    "scripts": {
+        "compile": "tsc -w",
+        "start": "npm run compile",
+        "dev": "nodemon dist/index.js"
+    },
+    "dependencies": {
+        "@apollo/datasource-rest": "^6.2.2",
+        "@apollo/server": "^4.10.0",
+        "graphql": "^16.8.1",
+        "nodemon": "^3.1.0",
+        "ts-node": "^10.9.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.24",
+        "typescript": "^5.3.3"
+    }
 }
