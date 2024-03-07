@@ -5,54 +5,41 @@ export const employeResolver = {
                 return 'SigninSuccess';
             }
             if (obj.error) {
-                return 'SigninError';
+                return 'errorMessage';
             }
             return null; // GraphQLError is thrown
         },
     },
-    applyLeaveResponse: {
+    successOrErrorResponse: {
         __resolveType(obj, contextValue, info) {
             if (obj.message) {
-                return 'applyLeaveSuccess';
+                return 'successMessage';
             }
             if (obj.error) {
-                return 'applyLeaveError';
+                return 'errorMessage';
             }
             return null; // GraphQLError is thrown
         },
     },
     Query: {
         async listAllEmployees(_, args, { dataSources }) {
-            const response = await dataSources.EmployeeAPI.listAllEmployees(args.jwtToken);
-            console.log(response);
-            return 'hi';
+            const response = await dataSources.EmployeeAPI.listAllEmployees();
+            return response;
         },
-        async getSignedUser(_, args, { dataSources }) {
+        async getLoggedInEmployeesDetails(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.getLoggedInEmployeesDetails(args.jwtToken);
-                return 'response';
+                const response = await dataSources.EmployeeAPI.getLoggedInEmployeesDetails();
+                console.log(response);
+                return response.data;
             }
             catch (error) {
-                console.error(error.message, 'resolver');
+                console.error(error.message);
                 throw new Error('Internal server error');
             }
         },
         async getEmployeeDetails(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.getEmployeeDetails(args.employeeId, args.jwtToken);
-                console.log(response);
-                return response.data;
-            }
-            catch (error) {
-                console.error(error.message, 'resolver');
-                return error.extensions.response.body;
-            }
-        },
-        // Leave Queries
-        async getAllLeavesOfLoggedInEmployee(_, args, { dataSources }) {
-            try {
-                const response = await dataSources.EmployeeAPI.getAllLeavesOfLoggedInEmployee(args.jwtToken);
-                console.log(response);
+                const response = await dataSources.EmployeeAPI.getEmployeeDetails(args.employeeId);
                 return response;
             }
             catch (error) {
@@ -60,33 +47,22 @@ export const employeResolver = {
                 return error.extensions.response.body;
             }
         },
-        async getSpecificMeLeave(_, args, { dataSources }) {
-            try {
-                const response = await dataSources.EmployeeAPI.getSpecificMeLeave(args.leaveId, args.jwtToken);
-                console.log(response);
-                return response;
-            }
-            catch (error) {
-                console.error(error.message);
-                return error.extensions.response.body;
-            }
-        }
     },
     Mutation: {
         async registerEmployee(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.registerEmployee(args.input, args.jwtToken);
-                return 'response';
+                const response = await dataSources.EmployeeAPI.registerEmployee(args.input);
+                console.log(response, 'here is the signup response');
+                return response;
             }
             catch (error) {
                 console.error(error);
-                throw new Error('Internal server error');
+                return error.extensions.response.body;
             }
         },
         async signin(_, args, { dataSources }) {
             try {
                 const response = await dataSources.EmployeeAPI.signin(args.input);
-                console.log(response, 'here is ti');
                 return response;
             }
             catch (error) {
@@ -96,33 +72,32 @@ export const employeResolver = {
         },
         async deleteEmployee(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.deleteEmployee(args.employeeId, args.jwtToken);
-                return 'response';
+                const response = await dataSources.EmployeeAPI.deleteEmployee(args.employeeId);
+                return response;
             }
             catch (error) {
                 console.error(error);
-                throw new Error('Internal server error');
+                return error.extensions.response.body;
             }
         },
         async activateEmployee(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.activateEmployee(args.employeeId, args.jwtToken);
-                return 'response';
+                const response = await dataSources.EmployeeAPI.activateEmployee(args.employeeId);
+                return response;
             }
             catch (error) {
                 console.error(error);
-                throw new Error('Internal server error');
+                return error.extensions.response.body;
             }
         },
         async updateEmployeeProfile(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.updateEmployeeProfile(args.employeeId, args.jwtToken, args.input);
-                console.log(response);
-                return 'response';
+                const response = await dataSources.EmployeeAPI.updateEmployeeProfile(args.employeeId, args.input);
+                return response;
             }
             catch (error) {
                 console.error(error);
-                throw new Error('Internal server error');
+                return error.extensions.response.body;
             }
         },
         async updateMeProfile(_, args, { dataSources }) {
@@ -144,16 +119,6 @@ export const employeResolver = {
             catch (error) {
                 console.error(error);
                 throw new Error('Internal server error');
-            }
-        },
-        async applyLeave(_, args, { dataSources }) {
-            try {
-                const response = await dataSources.EmployeeAPI.applyLeave(args.input, args.jwtToken);
-                console.log(response);
-                return response;
-            }
-            catch (error) {
-                return error.extensions.response.body;
             }
         },
     }
