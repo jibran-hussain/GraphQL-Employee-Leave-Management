@@ -4,18 +4,6 @@ export const typeDefs = `#graphql
         token: String
     }
 
-    type SigninError{
-        error: String
-    }
-
-    type applyLeaveSuccess{
-        message: String
-    }
-
-    type applyLeaveError{
-        error: String
-    }
-
     type LeaveMetaData{
         totalLeaveApplications: Int
         totalLeaveDays: Int
@@ -27,8 +15,73 @@ export const typeDefs = `#graphql
         data:[Leave]
         metadata: LeaveMetaData
     }
-    union SigninResponse= SigninSuccess | SigninError
-    union applyLeaveResponse = applyLeaveSuccess | applyLeaveError
+
+    #   success message
+    type successMessage{
+        message: String
+    }
+
+    type errorMessage{
+        error: String
+    }
+
+    type listAllEmployeesMetadata{
+        totalEmployees: Int
+        currentPage: Int
+        totalPages: Int
+    }
+
+    type listAllEmployeesResponse{
+        data:[EmployeeWithoutLeaves]
+        metadata: listAllEmployeesMetadata
+    }
+
+    type getEmployeeDetailsResponse{
+        data: Employee
+    }
+
+    type LeavesWithEmployeeInformation{
+        id: ID
+        reason: String
+        dates: [String!]
+        status: String
+        rejectionReaosn: String
+        createdAt: String
+        updatedAt: String
+        deletedAt: String
+        Employee: [Employee]
+    }
+
+    type getAllLeavesOfAnEmployee{
+        data: [LeavesWithEmployeeInformation]
+    }
+
+    type getSpecificLeaveInSystem{
+        data: Leave
+    }
+
+    type getAllLeavesInSystem{
+        data: [LeavesWithEmployeeInformation]
+        metadata: LeaveMetaData
+    }
+
+    type leavesSummary{
+        approvedLeaves: Int
+        underProcessLeaves: Int
+        rejectedLeaves: Int 
+    }
+
+    type getLeavesSummary{
+        data: leavesSummary
+    }
+
+    union SigninResponse= SigninSuccess | errorMessage
+    union applyLeaveResponse = successMessage | errorMessage
+    union successOrErrorResponse = successMessage | errorMessage
+    union getAllLeavesOfAnEmployeeResponse= getAllLeavesOfAnEmployee | errorMessage
+    union getSpecificLeaveInSystemResponse= getSpecificLeaveInSystem | errorMessage
+    union getAllLeavesInSystemResponse = getAllLeavesInSystem | errorMessage
+    union getLeavesSummaryResponse = getLeavesSummary | errorMessage
 
     
 
@@ -36,7 +89,6 @@ export const typeDefs = `#graphql
         id: ID
         name: String
         email: String
-        hashedPassword: String
         designation: String
         mobileNumber: String
         salary: Float
@@ -61,30 +113,50 @@ export const typeDefs = `#graphql
         employeeId: ID
     }
 
+    type EmployeeWithoutLeaves {
+        id: ID
+        name: String
+        email: String
+        hashedPassword: String
+        designation: String
+        mobileNumber: String
+        salary: Float
+        role: String
+        profilePicture: String
+        leavesLeft: Int
+        createdAt: String
+        updatedAt: String
+        deletedAt: String
+}
+
     type Query{
-        listAllEmployees(input: listEmployeesQuery,jwtToken: String): String
-        # getEmployeeDetails(id: ID!,jwtToken: String): String
-        getSignedUser(jwtToken: String): String
-        getEmployeeDetails(employeeId:ID!,jwtToken: String): Employee
+        listAllEmployees(input: listEmployeesQuery): listAllEmployeesResponse
+        getLoggedInEmployeesDetails: Employee
+        getEmployeeDetails(employeeId:ID!): getEmployeeDetailsResponse
 
         # Leaves Queries
-        getAllLeavesInSystem(jwtToken: String): String
-        getAllLeavesOfAnEmployee(employeeId: ID!): String
+        getAllLeavesInSystem: getAllLeavesInSystemResponse
+        getAllLeavesOfAnEmployee(employeeId: ID!): getAllLeavesOfAnEmployeeResponse
         getAllLeavesOfLoggedInEmployee(jwtToken: String): getAllMeLeavesResponse
-        getSpecificMeLeave(leaveId: ID!, jwtToken: String):Leave
+        getSpecificLeaveInSystem(leaveId: ID!): String
+        getSpecificMeLeave(leaveId: ID!):Leave
+        getSystemLeaveSummary: getLeavesSummaryResponse
+        getEmployeeLeaveSummary(employeeId: Int): getLeavesSummaryResponse
     }
 
     type Mutation{
-        registerEmployee(input: SignupInput, jwtToken: String): String
+        registerEmployee(input: SignupInput): successOrErrorResponse
         signin(input: SigninInput): SigninResponse
-        deleteEmployee(employeeId: ID!,jwtToken: String):String
-        activateEmployee(employeeId: ID!,jwtToken: String):String
-        updateEmployeeProfile(employeeId:ID!,jwtToken: String,input: updateEmployeeProfile): String
+        deleteEmployee(employeeId: ID!):successOrErrorResponse
+        activateEmployee(employeeId: ID!):successOrErrorResponse
+        updateEmployeeProfile(employeeId:ID!,input: updateEmployeeProfile): successOrErrorResponse
         updateMeProfile(jwtToken: String,input: updateMeProfile): String
         deleteMe(jwtToken: String): String
 
         # Leave related Mutations
-        applyLeave(input:applyLeave, jwtToken: String): applyLeaveResponse
+        applyLeave(input:applyLeave, jwtToken: String): successOrErrorResponse
+        deleteLeave(leaveId: ID!,jwtToken: String): successOrErrorResponse
+        rejectLeave(leaveId: ID!, input:rejectLeave): successOrErrorResponse
     }
 
     input SigninInput{
@@ -93,14 +165,14 @@ export const typeDefs = `#graphql
     }
 
     input SignupInput{
-        name: String
-        email: String
-        password: String
-        role: String
+        name: String!
+        email: String!
+        password: String!
+        role: String!
         mobileNumber: String
         profilePicture: String
         salary: Float
-        designation: String
+        designation: String!
     }
 
     input listEmployeesQuery{
@@ -132,5 +204,9 @@ export const typeDefs = `#graphql
         fromDate: String
         toDate: String
         reason: String
+    }
+
+    input rejectLeave{
+        rejectionReaosn: String
     }
 `;
