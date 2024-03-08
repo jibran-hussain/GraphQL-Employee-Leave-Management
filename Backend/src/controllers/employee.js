@@ -62,7 +62,7 @@ export const listAllEmployees = async (req, res) => {
         }
         )
 
-        if(count === 0) return res.status(404).json({message:`The list is empty`})
+        if(count === 0) return res.status(404).json({error:`The list is empty`})
 
         if(limit && offset){
             const totalPages = Math.ceil(count/limit);
