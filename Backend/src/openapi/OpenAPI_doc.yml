@@ -367,7 +367,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
+                  error:
                     type: string
                     description: The list is empty
                     example: The list is empty
@@ -1322,6 +1322,7 @@ paths:
             enum: [approved, Under Process, rejected]
           example: approved
           description: Filter leaves by status
+          allowReserved: true
         - in: query
           name: search
           schema:
@@ -1870,6 +1871,7 @@ paths:
             type: string
             enum: [approved, Under Process, rejected]
           description: Filter leaves by status (e.g., 'approved', 'Under Process', 'rejected')
+          allowReserved: true
         - in: query
           name: search
           schema:
@@ -2195,6 +2197,7 @@ paths:
         - in: query
           name: status
           description: Filter leaves by status (approved, Under Process, rejected)
+          allowReserved: true
           schema:
             type: string
             enum: [approved, Under Process, rejected]
