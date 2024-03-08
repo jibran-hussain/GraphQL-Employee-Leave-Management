@@ -1,6 +1,6 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
-import { typeDefs } from './schema/employee.js';
+import { typeDefs } from './schema/schema.js';
 import { mergeResolvers } from '@graphql-tools/merge';
 import { employeResolver } from './resolver/employee.js';
 import { leaveResolver } from './resolver/leaves.js';
