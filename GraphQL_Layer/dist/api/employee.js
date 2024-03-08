@@ -17,8 +17,10 @@ class EmployeeAPI extends RESTDataSource {
     getLoggedInEmployeesDetails() {
         return this.get('me');
     }
-    listAllEmployees() {
-        return this.get('employees');
+    listAllEmployees(params) {
+        return this.get('employees', {
+            params
+        });
     }
     deleteEmployee(employeeId) {
         return this.delete(`employees/${employeeId}`);
@@ -29,20 +31,11 @@ class EmployeeAPI extends RESTDataSource {
     async updateEmployeeProfile(employeeId, input) {
         return this.patch(`employees/${employeeId}`, { body: input });
     }
-    async updateMeProfile(jwtToken, input) {
-        console.log(input, 'here is the input');
-        return this.patch(`me`, { body: input,
-            headers: {
-                Authorization: `Bearer ${jwtToken}`
-            }
-        });
+    async updateMeProfile(input) {
+        return this.patch(`me`, { body: input });
     }
-    async deleteMe(jwtToken) {
-        return this.delete(`me`, {
-            headers: {
-                Authorization: `Bearer ${jwtToken}`
-            }
-        });
+    async deleteMe() {
+        return this.delete(`me`);
     }
     getEmployeeDetails(employeeId) {
         return this.get(`employees/${employeeId}`);
@@ -54,26 +47,14 @@ class EmployeeAPI extends RESTDataSource {
             }
         });
     }
-    async getAllLeavesOfLoggedInEmployee(jwtToken) {
-        return this.get('me/leaves', {
-            headers: {
-                Authorization: `Bearer ${jwtToken}`
-            }
-        });
+    async getAllLeavesOfLoggedInEmployee() {
+        return this.get('me/leaves');
     }
-    async getSpecificMeLeave(leaveId, jwtToken) {
-        return this.get(`me/leaves/${leaveId}`, {
-            headers: {
-                Authorization: `Bearer ${jwtToken}`
-            }
-        });
+    async getSpecificMeLeave(leaveId) {
+        return this.get(`me/leaves/${leaveId}`);
     }
-    async deleteLeave(leaveId, jwtToken) {
-        return this.delete(`me/leaves/${leaveId}`, {
-            headers: {
-                Authorization: `Bearer ${jwtToken}`
-            }
-        });
+    async deleteLeave(leaveId) {
+        return this.delete(`me/leaves/${leaveId}`);
     }
     getAllLeavesOfAnEmployee(employeeId) {
         return this.get(`employees/${employeeId}/leaves`);
@@ -81,8 +62,11 @@ class EmployeeAPI extends RESTDataSource {
     getSpecificLeaveInSystem(leaveId) {
         return this.get(`leaves/${leaveId}`);
     }
-    getAllLeavesInSystem() {
-        return this.get(`leaves`);
+    getAllLeavesInSystem(params) {
+        console.log(params, 'here are the params');
+        return this.get(`leaves`, {
+            params
+        });
     }
     rejectLeave(leaveId, input) {
         return this.post(`leaves/${leaveId}`, {
@@ -94,6 +78,19 @@ class EmployeeAPI extends RESTDataSource {
     }
     getEmployeeLeaveSummary(employeeId) {
         return this.get(`leaves/employees/${employeeId}/summary`);
+    }
+    updateLeave(leaveId, input) {
+        return this.patch(`me/leaves/${leaveId}`, {
+            body: input
+        });
+    }
+    resetPassword(input) {
+        return this.patch(`me/password`, {
+            body: input
+        });
+    }
+    getMeLeavesSummary() {
+        return this.get(`me/leaves/summary`);
     }
 }
 export default EmployeeAPI;
