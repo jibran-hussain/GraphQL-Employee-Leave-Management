@@ -43,11 +43,33 @@ export const leaveResolver = {
             return null; // Return null if the type cannot be determined
         }
     },
+    getAllMeLeavesResponse: {
+        __resolveType(obj, context, info) {
+            if (obj.data) {
+                return 'getAllMeLeaves';
+            }
+            if (obj.error) {
+                return 'errorMessage';
+            }
+            return null; // Return null if the type cannot be determined
+        }
+    },
+    getSpecificMeLeaveResponse: {
+        __resolveType(obj, context, info) {
+            if (obj.data) {
+                return 'getSpecificMeLeave';
+            }
+            if (obj.error) {
+                return 'errorMessage';
+            }
+            return null; // Return null if the type cannot be determined
+        }
+    },
     Query: {
         async getAllLeavesOfLoggedInEmployee(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.getAllLeavesOfLoggedInEmployee(args.jwtToken);
-                console.log(response);
+                const response = await dataSources.EmployeeAPI.getAllLeavesOfLoggedInEmployee();
+                console.log(response, 'hi');
                 return response;
             }
             catch (error) {
@@ -68,7 +90,7 @@ export const leaveResolver = {
         },
         async getSpecificMeLeave(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.getSpecificMeLeave(args.leaveId, args.jwtToken);
+                const response = await dataSources.EmployeeAPI.getSpecificMeLeave(args.leaveId);
                 console.log(response);
                 return response;
             }
@@ -89,11 +111,11 @@ export const leaveResolver = {
         },
         async getAllLeavesInSystem(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.getAllLeavesInSystem();
+                const response = await dataSources.EmployeeAPI.getAllLeavesInSystem(args.input);
                 return response;
             }
             catch (error) {
-                console.log(error.message);
+                console.log(error);
                 return error.extensions.response.body;
             }
         },
@@ -131,7 +153,7 @@ export const leaveResolver = {
         },
         async deleteLeave(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.deleteLeave(args.leaveId, args.jwtToken);
+                const response = await dataSources.EmployeeAPI.deleteLeave(args.leaveId);
                 return response;
             }
             catch (error) {
@@ -149,5 +171,15 @@ export const leaveResolver = {
                 return error.extensions.response.body;
             }
         },
+        async updateLeave(_, args, { dataSources }) {
+            try {
+                const response = await dataSources.EmployeeAPI.updateLeave(args.leaveId, args.input);
+                return response;
+            }
+            catch (error) {
+                console.log(error.message);
+                return error.extensions.response.body;
+            }
+        }
     }
 };
