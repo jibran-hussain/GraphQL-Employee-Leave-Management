@@ -478,7 +478,11 @@ export const getLeaveById = async (req, res) => {
     try {
         const leaveId = Number(req.params.leaveId);
 
-        const leave = await Leave.findByPk(leaveId);
+        const leave = await Leave.findByPk(leaveId,{
+            attributes:{
+                exclude: ['deletedAt']
+            }
+        });
 
         if(!leave) return res.status(404).json({error:`Leave not found`});
 
