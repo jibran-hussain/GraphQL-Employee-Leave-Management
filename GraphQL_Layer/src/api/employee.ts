@@ -58,12 +58,8 @@ class EmployeeAPI extends RESTDataSource{
         return this.get(`employees/${employeeId}`)
     }
 
-    async applyLeave(input:{fromDate: string,toDate:string,reason: string},jwtToken: string){
-        return this.post('me/leaves',{body:input,
-            headers:{
-                Authorization: `Bearer ${jwtToken}`
-            }
-        })
+    async applyLeave(input:{fromDate: string,toDate:string,reason: string}){
+        return this.post('me/leaves',{body:input})
     }
 
     async getAllLeavesOfLoggedInEmployee(){
@@ -87,15 +83,14 @@ class EmployeeAPI extends RESTDataSource{
     }
 
     getAllLeavesInSystem(params){
-        console.log(params,'here are the params')
         return this.get(`leaves`,{
             params
         })
     }
 
-    rejectLeave(leaveId,input){
-        return this.post(`leaves/${leaveId}`,{
-            body: input
+    rejectLeave(leaveId: number,rejectionReason: string){
+        return this.post(`leaves/${leaveId}/reject`,{
+            body: {rejectionReason}
         })
     }
 
