@@ -7,13 +7,16 @@ export const leaveResolver = {
             else if (obj.error) {
                 return 'errorMessage';
             }
+            else if (obj.message) {
+                return 'successMessage';
+            }
             return null; // Return null if the type cannot be determined
         }
     },
-    getSpecificLeaveInSystemResponse: {
+    getSpecificLeaveResponse: {
         __resolveType(obj, contextValue, info) {
             if (obj.data) {
-                return 'getSpecificLeaveInSystem';
+                return 'getSpecificLeave';
             }
             if (obj.error) {
                 return 'errorMessage';
@@ -143,7 +146,7 @@ export const leaveResolver = {
     Mutation: {
         async applyLeave(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.applyLeave(args.input, args.jwtToken);
+                const response = await dataSources.EmployeeAPI.applyLeave(args.input);
                 console.log(response);
                 return response;
             }
@@ -163,7 +166,7 @@ export const leaveResolver = {
         },
         async rejectLeave(_, args, { dataSources }) {
             try {
-                const response = await dataSources.EmployeeAPI.rejectLeave(args.leaveId, args.input);
+                const response = await dataSources.EmployeeAPI.rejectLeave(args.leaveId, args.rejectionReason);
                 return response;
             }
             catch (error) {
