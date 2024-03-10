@@ -24,7 +24,11 @@ export const employeeTypeDef = `#graphql
         metadata: listAllEmployeesMetadata
     }
 
-    type getEmployeeDetailsResponse{
+    type getEmployeeDetails{
+        data: Employee
+    }
+
+    type getLoggedInEmployeesDetails{
         data: Employee
     }
 
@@ -33,8 +37,8 @@ export const employeeTypeDef = `#graphql
     union SigninResponse= SigninSuccess | errorMessage
     union successOrErrorResponse = successMessage | errorMessage
     union listAllEmployeesResponse= listAllEmployees | errorMessage
-
-    
+    union getLoggedInEmployeesDetailsResponse = getLoggedInEmployeesDetails | errorMessage
+    union getEmployeeDetailsResponse = getEmployeeDetails | errorMessage | successMessage
 
     type Employee{
         id: ID
@@ -44,7 +48,7 @@ export const employeeTypeDef = `#graphql
         mobileNumber: String
         salary: Float
         role: String
-        profilePicture: String
+        profilePictureURL: String
         leavesLeft: Int
         Leaves: [Leave]
         createdAt: String
@@ -58,12 +62,11 @@ export const employeeTypeDef = `#graphql
         id: ID
         name: String
         email: String
-        hashedPassword: String
         designation: String
         mobileNumber: String
         salary: Float
         role: String
-        profilePicture: String
+        profilePictureURL: String
         leavesLeft: Int
         createdAt: String
         updatedAt: String
@@ -72,8 +75,8 @@ export const employeeTypeDef = `#graphql
 
     type Query{
         listAllEmployees(input: listEmployeesQuery): listAllEmployeesResponse
-        getLoggedInEmployeesDetails: Employee
-        getEmployeeDetails(employeeId:ID!): getEmployeeDetailsResponse
+        getLoggedInEmployeesDetails: getLoggedInEmployeesDetailsResponse
+        getEmployeeDetails(employeeId:Int!): getEmployeeDetailsResponse
     }
 
     type Mutation{
@@ -81,15 +84,15 @@ export const employeeTypeDef = `#graphql
         signin(input: SigninInput): SigninResponse
         deleteEmployee(employeeId: ID!):successOrErrorResponse
         activateEmployee(employeeId: ID!):successOrErrorResponse
-        updateEmployeeProfile(employeeId:ID!,input: updateEmployeeProfile): successOrErrorResponse
-        updateMeProfile(input: updateMeProfile): successOrErrorResponse
+        updateEmployeeProfile(employeeId:ID!,input: updateEmployeeProfile!): successOrErrorResponse
+        updateMeProfile(input: updateMeProfile!): successOrErrorResponse
         deleteMe: successOrErrorResponse
-        resetPassword(input: resetPassword): successOrErrorResponse
+        resetPassword(input: resetPassword!): successOrErrorResponse
     }
 
     input SigninInput{
-        email: String
-        password: String
+        email: String!
+        password: String!
     }
 
     input SignupInput{
@@ -129,8 +132,8 @@ export const employeeTypeDef = `#graphql
     }
 
     input resetPassword{
-        oldPassword: String
-        newPassword: String
-        confirmPassword: String
+        oldPassword: String!
+        newPassword: String!
+        confirmPassword: String!
     }
 `;
