@@ -32,6 +32,28 @@ export const employeResolver = {
             return null; // GraphQLError is thrown
         },
     },
+    getLoggedInEmployeesDetailsResponse: {
+        __resolveType(obj, contextValue, info) {
+            if (obj.data) {
+                return 'getLoggedInEmployeesDetails';
+            }
+            if (obj.error) {
+                return 'errorMessage';
+            }
+            return null; // GraphQLError is thrown
+        },
+    },
+    getEmployeeDetailsResponse: {
+        __resolveType(obj, contextValue, info) {
+            if (obj.data) {
+                return 'getEmployeeDetails';
+            }
+            if (obj.error) {
+                return 'errorMessage';
+            }
+            return null; // GraphQLError is thrown
+        },
+    },
     Query: {
         async listAllEmployees(_, args, { dataSources }) {
             try {
@@ -47,7 +69,7 @@ export const employeResolver = {
             try {
                 const response = await dataSources.EmployeeAPI.getLoggedInEmployeesDetails();
                 console.log(response);
-                return response.data;
+                return response;
             }
             catch (error) {
                 console.error(error.message);
@@ -120,6 +142,7 @@ export const employeResolver = {
         async updateEmployeeProfile(_, args, { dataSources }) {
             try {
                 const response = await dataSources.EmployeeAPI.updateEmployeeProfile(args.employeeId, args.input);
+                console.log(response, 'here is the response');
                 return response;
             }
             catch (error) {
