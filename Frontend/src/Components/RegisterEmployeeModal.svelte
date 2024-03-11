@@ -16,10 +16,10 @@
     { type: 'text', name: 'name', label: 'Name', placeholder: 'Enter name' },
     { type: 'email', name: 'email', label: 'Email', placeholder: 'Enter email' },
     { type: 'password', name: 'password', label: 'Password', placeholder: 'Enter Password' },
-    { type: 'number', name: 'mobileNumber', label: 'Mobile Number', placeholder: 'Enter Mobile Number' },
+    { type: 'text', name: 'mobileNumber', label: 'Mobile Number', placeholder: 'Enter Mobile Number' },
     { type: 'text', name: 'profilePictureURL', label: 'Profile Picture URL', placeholder: 'Enter URL' },
     { type: 'text', name: 'designation', label: 'Designation', placeholder: 'Enter designation' },
-    { type: 'number', name: 'salary', label: 'Salary', placeholder: 'Enter Salary' },
+    { type: 'text', name: 'salary', label: 'Salary', placeholder: 'Enter Salary' },
   ];
 
   if($user.role === 'admin') formFields.push({ type: 'select', name: 'role', label: 'Role', placeholder: 'Select Role',options:['employee'] });
@@ -29,7 +29,6 @@
   let success='';
   let isSuccess=false;
   let isError=false;
-  let data;
 
 const handleSubmit=async(formData)=>{
     try{
@@ -67,19 +66,43 @@ const handleSubmit=async(formData)=>{
           isSuccess=false;
       }
 
+      if(password && password.length <4){
+        isError=true;
+          error=`Password should be of minimum 4 characters`
+          success=false;
+          isSuccess=false;
+      }
+
       else{
-        const response = await fetch(`http://localhost:3000/api/v1/auth/signup`, {
+        const mutation= `mutation RegisterEmployee($input: SignupInput!) {
+        registerEmployee(input: $input) {
+            ... on successMessage {
+                message
+            }
+            ... on errorMessage {
+                error
+            } 
+        }
+      }
+        
+    `
+        const response = await fetch(`http://localhost:4000/graphql`, {
         method: "POST",
         headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
             'Authorization':`Bearer ${$user.token}`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          query: mutation,
+          variables:{
+            input: formData
+          }
+        }),
         });
-         data=await response.json()
+        let responseBody=await response.json()
         // show the error
-        if(response.ok){
+        if(responseBody.data?.registerEmployee.message){
             isSuccess=true;
             success='Employee registered successfully'
             isError=false
@@ -87,7 +110,7 @@ const handleSubmit=async(formData)=>{
         }
         else{
             isError=true;
-            error=data.error||data.message
+            error=responseBody.data?.registerEmployee.error||responseBody.message
             success=false;
             isSuccess=false;
         }
