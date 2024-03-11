@@ -11,51 +11,93 @@
     let employee;
     let showUpdateModal=false;
     
-    const handleDeleteEmployee=async(employeeId)=>{
+    const handleActivateEmployee=async(employeeId)=>{
     try{
-        let url=`http://localhost:3000/api/v1/employees/${employeeId}`;
-        const response=await fetch(url,{
-                method:'DELETE',
-                headers:{
-                    'Authorization':`Bearer ${$user.token}`
+        const mutation = `mutation ActivateEmployee($employeeId: ID!) {
+                activateEmployee(employeeId: $employeeId) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            })
+            }`
 
-            if(response.ok){
-                toast.success('Employee deleted successfully', {
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query: mutation,
+            variables:{
+                employeeId
+            }
+                }),
+            });
+            let responseBody=await response.json()
+
+            if(responseBody.errors){
+                toast.error('You are not authorized to activate this employee',{
+                    duration:3000
+                });   
+            }
+            else{
+                toast.success('Employee activated successfully', {
                     duration: 5000,
                     position: 'top-center', 
                 });
-            await handleSearchEmployee();
-            }else{
-                toast.error('You are not authorized to delete this employee',{
-                    duration:3000
-                });
+                await fetchEmployeeDetails();
             }
     }catch(error){
         console.log(error.message)
     }
 }
 
-const handleActivateEmployee=async(employeeId)=>{
+const handleDeleteEmployee=async(employeeId)=>{
     try{
-        const response=await fetch(`http://localhost:3000/api/v1/employees/${employeeId}/activate`,{
-                method:'POST',
-                headers:{
-                    'Authorization':`Bearer ${$user.token}`
+        const mutation = `mutation DeleteEmployee($employeeId: ID!) {
+                deleteEmployee(employeeId: $employeeId) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            })
+            }`
 
-            if(response.ok){
-                toast.success('Employee Activated successfully', {
-                    duration: 5000,
-                    position: 'top-center',
-                });
-                await handleSearchEmployee();
-            }else{
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query: mutation,
+            variables:{
+                employeeId
+            }
+                }),
+            });
+            let responseBody=await response.json()
+
+            
+            if(responseBody.errors){
                 toast.error('You are not authorized to delete this employee',{
                     duration:3000
+                });   
+            }
+            else{
+                toast.success('Employee deleted successfully', {
+                    duration: 5000,
+                    position: 'top-center', 
                 });
+                await fetchEmployeeDetails();
             }
     }catch(error){
         console.log(error.message)
@@ -64,19 +106,59 @@ const handleActivateEmployee=async(employeeId)=>{
 
     const fetchEmployeeDetails=async()=>{
         try{
-            const response = await fetch(`http://localhost:3000/api/v1/employees/${employeeId}`,{
-                method:"GET",
-                headers:{
-                    Accept:'application/json',
-                    'Content-Type':'application/json',
-                    Authorization:`Bearer ${$user.token}`
+            const query=`
+            query GetEmployeeDetails($employeeId: ID!) {
+            getEmployeeDetails(employeeId: $employeeId) {
+                ... on getEmployeeDetails {
+                    data {
+                        id
+                        name
+                        email
+                        designation
+                        mobileNumber
+                        salary
+                        role
+                        profilePictureURL
+                        leavesLeft
+                        createdAt
+                        updatedAt
+                        deletedAt
+                    }
                 }
-            });
-            const {data}=await response.json();
-            if(response.ok) employee=data
-            else employee=''
-        }catch(error){
+                ... on errorMessage {
+                    error
+                }
+                ... on successMessage {
+                    message
+                }
+            }
+}
 
+            `
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+                method: "POST",
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization':`Bearer ${$user.token}`
+                },
+                body: JSON.stringify({
+                    query,
+                    variables:{
+                        employeeId
+                    }
+                }),
+            });
+
+            let responseBody=await response.json()
+
+            if(responseBody.errors) employee=''
+            else{
+                employee=responseBody.data.getEmployeeDetails.data;
+            }
+        }catch(error){
+            console.log(error.message)
         }
     }
 

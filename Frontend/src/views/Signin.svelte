@@ -12,8 +12,6 @@
 
     let error=''
     let isError=false;
-    let data;
-
     const handleSubmit=async(formData)=>{
         try{
             const {email,password}=formData
@@ -21,25 +19,37 @@
                 isError=true;
                 error= 'All fields are mandatory'
             }else{
-                const response = await fetch(`http://localhost:3000/api/v1/auth/signin`, {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(formData),
-            });
-             data=await response.json()
-            if(response.ok){
-                const {token}=data;
-                localStorage.setItem('jwt',`${JSON.stringify(token)}`)
-                const decodedToken=decodeJwtToken(token);
-                user.set(decodedToken)
-                goto('/dashboard')
+                const mutation= `
+                mutation Signin {
+                    signin(input: { email: "${formData.email}", password: "${formData.password}" }) {
+                        ... on SigninSuccess {
+                            token
+                        }
+                        ... on errorMessage {
+                            error
+                        }
+                    }
+                }
+                `
+                const response = await fetch(`http://localhost:4000/graphql`, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({query:mutation}),
+                });
+                let responseBody=await response.json()
+                if(responseBody.data.signin.token){
+                    const token=responseBody.data.signin.token;
+                    localStorage.setItem('jwt',`${JSON.stringify(token)}`)
+                    const decodedToken=decodeJwtToken(token);
+                    user.set(decodedToken)
+                    goto('/dashboard')
             }
             else{
                 isError=true;
-                error=data.error || data.message
+                error=responseBody.data.signin.error || responseBody.data.signin.message
             }
             }
             
