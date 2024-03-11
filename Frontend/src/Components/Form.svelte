@@ -3,11 +3,8 @@
 
 
 export let options;
-export let width;
 export let handleSubmit;
-export let userToUpdate;
 let formData={};
-export let isError;
 export let isSuccess;
 export let error;
 export let success;
