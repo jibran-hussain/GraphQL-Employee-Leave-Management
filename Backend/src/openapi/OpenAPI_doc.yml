@@ -121,7 +121,7 @@ paths:
                 profilePictureURL:
                   type: string
                 salary:
-                  type: number
+                  type: string
                 designation:
                   type: string
               required:
@@ -574,9 +574,7 @@ paths:
                   type: string
                   minLength: 3
                 mobileNumber:
-                  type: number
-                  minimum: 1000000000 
-                  maximum: 9999999999
+                  type: string
                   description: Mobile number of the employee (must be exactly 10 digits)
                 designation:
                   type: string
@@ -584,7 +582,7 @@ paths:
                   type: string
                   minLength: 4
                 salary:
-                  type: number
+                  type: string
                 profilePictureURL:
                   type: string
                 role:
