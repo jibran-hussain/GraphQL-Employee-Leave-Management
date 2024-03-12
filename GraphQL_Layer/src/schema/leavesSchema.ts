@@ -15,6 +15,12 @@ type ListAllSystemLeavesMetadata{
     totalPages: Int
 }
 
+type ListEmployeeLeavesMetadata{
+    timesApplied: Int
+    totalLeaveDays: Int
+    currentPage: Int
+    totalPages: Int
+}
 type getAllMeLeaves{
         data:[Leave]
         metadata: LeaveMetaData
@@ -25,7 +31,7 @@ type getAllMeLeaves{
         reason: String
         dates: [String!]
         status: String
-        rejectionReaosn: String
+        rejectionReason: String
         createdAt: String
         updatedAt: String
         Employee: EmployeeWithoutLeaves
@@ -33,7 +39,7 @@ type getAllMeLeaves{
 
     type getAllLeavesOfAnEmployee{
         data: [LeavesWithEmployeeInformation]
-        metadata: ListAllSystemLeavesMetadata
+        metadata: ListEmployeeLeavesMetadata
     }
 
     type getSpecificLeave{
@@ -76,26 +82,27 @@ type getAllMeLeaves{
         reason: String
         dates: [String!]
         status: String
-        rejectionReaosn: String
+        rejectionReason: String
         createdAt: String
         updatedAt: String
         employeeId: ID
     }
 
     type Query{
-        getAllLeavesInSystem(input: listAllLeavesInSystem): getAllLeavesInSystemResponse
-        getAllLeavesOfAnEmployee(employeeId: ID!): getAllLeavesOfAnEmployeeResponse
+        getAllLeavesInSystem(params: listAllLeavesInSystem): getAllLeavesInSystemResponse
+        getAllLeavesOfAnEmployee(employeeId: ID!,params:listAllLeavesOfAnEmployee): getAllLeavesOfAnEmployeeResponse
         getAllLeavesOfLoggedInEmployee: getAllMeLeavesResponse
         getSpecificLeaveInSystem(leaveId: ID!): getSpecificLeaveResponse
         getSpecificMeLeave(leaveId: ID!):getSpecificMeLeaveResponse
         getSystemLeaveSummary: getLeavesSummaryResponse
-        getEmployeeLeaveSummary(employeeId: Int): getLeavesSummaryResponse
+        getEmployeeLeaveSummary(employeeId: ID!): getLeavesSummaryResponse
         getMeLeavesSummary: getLeavesSummaryResponse
     }
 
     type Mutation{
         applyLeave(input:applyLeave!): successOrErrorResponse
         deleteLeave(leaveId: ID!): successOrErrorResponse
+        acceptLeave(leaveId: ID!): successOrErrorResponse
         rejectLeave(leaveId: ID!, rejectionReason: String!): successOrErrorResponse
         updateLeave(leaveId: ID!,input: updateLeave!): successOrErrorResponse
     }
@@ -113,8 +120,15 @@ type getAllMeLeaves{
     }
 
     input listAllLeavesInSystem{
-        limit: String
-        offset: String
+        limit: Int
+        offset: Int
+        status: String
+        search: String
+    }
+
+    input listAllLeavesOfAnEmployee{
+        limit: Int
+        offset: Int
         status: String
         search: String
     }

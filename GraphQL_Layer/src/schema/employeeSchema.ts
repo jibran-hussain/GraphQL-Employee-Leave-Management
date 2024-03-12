@@ -76,7 +76,7 @@ export const employeeTypeDef=`#graphql
     type Query{
         listAllEmployees(input: listEmployeesQuery): listAllEmployeesResponse
         getLoggedInEmployeesDetails: getLoggedInEmployeesDetailsResponse
-        getEmployeeDetails(employeeId:Int!): getEmployeeDetailsResponse
+        getEmployeeDetails(employeeId: ID!): getEmployeeDetailsResponse
     }
 
     type Mutation{
@@ -102,13 +102,13 @@ export const employeeTypeDef=`#graphql
         role: String!
         mobileNumber: String
         profilePicture: String
-        salary: Float
+        salary: String
         designation: String!
     }
 
     input listEmployeesQuery{
-        limit: String
-        offset: String
+        limit: Int
+        offset: Int
         order: String
         sortBy: String
         search: String
