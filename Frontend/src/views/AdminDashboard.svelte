@@ -21,6 +21,38 @@
     let limit=10;
 
 
+
+    const mutation= `query ListAllEmployees($input: listEmployeesQuery) {
+                listAllEmployees(input: $input) {
+                    ... on listAllEmployees {
+                        data {
+                            id
+                            name
+                            email
+                            designation
+                            mobileNumber
+                            salary
+                            role
+                            profilePictureURL
+                            leavesLeft
+                            createdAt
+                            updatedAt
+                            deletedAt
+                        }
+                        metadata {
+                            totalEmployees
+                            currentPage
+                            totalPages
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
+                }
+            }
+            `
+
+
     const {id,email,role,token}=$user;
 
 
@@ -56,18 +88,30 @@ $:{
 
     const fetchActiveEmployees=async()=>{
         try{
-            let url= `http://localhost:3000/api/v1/employees?limit=${limit}`;
 
-            if(searchInput) url += `?search=${searchInput}`;
-            if(selectedOption) searchInput?url += `&sortBy=${selectedOption}`:url += `?sortBy=${selectedOption}`
-            if(selectedOption && orderOption) url += `&order=${orderOption}`
-            const response=await fetch(url,{
-                headers:{
-                    'Authorization':`Bearer ${token}`
-                }
-            })
-            const data=await response.json();
-            if(response.ok) return data;
+            const params={}
+
+            if(searchInput) params.search=searchInput;
+            if(selectedOption) params.sortBy=selectedOption;
+            if(selectedOption && orderOption) params.order=orderOption;
+            showDeletedEmployees?params.deleted='true':''
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query: mutation,
+            variables:{
+                input: params
+                    }
+                }),
+            });
+            let responseBody=await response.json()
+            if(responseBody.data?.listAllEmployees) return responseBody.data.listAllEmployees;
             else return ''
         }catch(e){
             console.log(e.message)
@@ -77,17 +121,30 @@ $:{
 
     const fetchDeletedEmployees=async()=>{
         try{
-            let url=`http://localhost:3000/api/v1/employees?limit=${limit}&&deleted=true`;
-            if(searchInput) url += `&search=${searchInput}`;
-            if(selectedOption) url += `&sortBy=${selectedOption}`
-            if(selectedOption && orderOption) url += `&order=${orderOption}`
-            const response=await fetch(url,{
-                headers:{
-                    'Authorization':`Bearer ${token}`
-                }
-            })
-            const data=await response.json();
-            if(response.ok) return data;
+            const params={}
+
+            if(searchInput) params.search=searchInput;
+            if(selectedOption) params.sortBy=selectedOption;
+            if(selectedOption && orderOption) params.order=orderOption;
+            showDeletedEmployees?params.deleted='true':''
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query: mutation,
+            variables:{
+                input: params
+                    }
+                }),
+            });
+            let responseBody=await response.json()
+            console.log(responseBody,'here is the response body')
+            if(responseBody.data?.listAllEmployees) return responseBody.data.listAllEmployees;
             else return ''
         }catch(e){
             console.log(e.message)
@@ -96,20 +153,30 @@ $:{
 
     const handleSearch=async ()=>{
         try{
-            
-            let url=`http://localhost:3000/api/v1/employees?limit=${limit}&&search=${searchInput}`;
-            if(showDeletedEmployees) url += `&deleted=true`
-            if(selectedOption) url += `&sortBy=${selectedOption}`
-            if(selectedOption && orderOption) url += `&order=${orderOption}`
-            else url=url
-            const response=await fetch(url,{
-                headers:{
-                    'Authorization':`Bearer ${token}`
-                }
-            })
-            const data=await response.json();
-            if(data.message) employeesListData='';
-            else employeesListData = data;
+            const params={}
+
+            if(searchInput) params.search=searchInput;
+            if(selectedOption) params.sortBy=selectedOption;
+            if(selectedOption && orderOption) params.order=orderOption;
+            showDeletedEmployees?params.deleted='true':''
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query: mutation,
+            variables:{
+                input: params
+                    }
+                }),
+            });
+            let responseBody=await response.json()
+            if(responseBody.data?.listAllEmployees?.message) employeesListData='';
+            else employeesListData = responseBody.data?.listAllEmployees;
         }catch(error){
             console.log(error.message)
         }
@@ -119,18 +186,30 @@ $:{
 
     const handleSortBy=async()=>{
         try{
-            let url=`http://localhost:3000/api/v1/employees?limit=${limit}&&sortBy=${selectedOption}`;
-            if(showDeletedEmployees) url += `&deleted=true`
-            if(searchInput) url += `&search=${searchInput}`
-            if(orderOption) url += `&order=${orderOption}`
-            const response=await fetch(url,{
-                headers:{
-                    'Authorization':`Bearer ${token}`
-                }
-            })
-            const data=await response.json();
-            if(data.message) employeesListData='';
-            else employeesListData = data;
+            const params={}
+
+            if(searchInput) params.search=searchInput;
+            if(selectedOption) params.sortBy=selectedOption;
+            if(selectedOption && orderOption) params.order=orderOption;
+            showDeletedEmployees?params.deleted='true':''
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query: mutation,
+            variables:{
+                input: params
+                    }
+                }),
+            });
+            let responseBody=await response.json()
+            if(responseBody.data?.listAllEmployees?.message) employeesListData='';
+            else employeesListData = responseBody.data?.listAllEmployees;
         }catch(error){
             console.log(error)
         }
@@ -143,23 +222,30 @@ $:{
             return;
         }
 
-        let url = `http://localhost:3000/api/v1/employees?limit=${limit}&&sortBy=${selectedOption}&order=${orderOption}`;
+        const params={}
 
-        if (showDeletedEmployees) url += `&deleted=true`;
-        if (searchInput) url += `&search=${searchInput}`;
+        if(searchInput) params.search=searchInput;
+        if(selectedOption) params.sortBy=selectedOption;
+        if(selectedOption && orderOption) params.order=orderOption;
+        showDeletedEmployees?params.deleted='true':''
 
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        const response = await fetch(`http://localhost:4000/graphql`, {
+        method: "POST",
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization':`Bearer ${$user.token}`
+        },
+        body: JSON.stringify({
+        query: mutation,
+        variables:{
+            input: params
+                }
+            }),
         });
-
-        const data = await response.json();
-        if(response.ok){
-            employeesListData=data;
-        }else{
-            employeesListData='';
-        }
+        let responseBody=await response.json()
+        if(responseBody.data?.listAllEmployees?.message) employeesListData='';
+        else employeesListData = responseBody.data?.listAllEmployees;
     } catch (error) {
         console.log(error);
     }
@@ -168,24 +254,45 @@ $:{
 
 const handleDeleteEmployee=async(employeeId)=>{
     try{
-        let url=`http://localhost:3000/api/v1/employees/${employeeId}`;
-        const response=await fetch(url,{
-                method:'DELETE',
-                headers:{
-                    'Authorization':`Bearer ${token}`
+        const mutation = `mutation DeleteEmployee($employeeId: ID!) {
+                deleteEmployee(employeeId: $employeeId) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            })
+            }`
 
-            if(response.ok){
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query: mutation,
+            variables:{
+                employeeId
+            }
+                }),
+            });
+            let responseBody=await response.json()
+
+            
+            if(responseBody.errors){
+                toast.error('You are not authorized to delete this employee',{
+                    duration:3000
+                });   
+            }
+            else{
                 toast.success('Employee deleted successfully', {
                     duration: 5000,
                     position: 'top-center', 
                 });
-            employeesListData=await fetchActiveEmployees();
-            }else{
-                toast.error('You are not authorized to delete this employee',{
-                    duration:3000
-                });
+                employeesListData=await fetchActiveEmployees();
             }
     }catch(error){
         console.log(error.message)
@@ -194,13 +301,7 @@ const handleDeleteEmployee=async(employeeId)=>{
 
 const handleUpdateEmployee=async(employeeId)=>{
     try{
-        const response=await fetch(`http://localhost:3000/api/v1/employees/${employeeId}`,{
-            headers:{
-                'Authorization':`Bearer ${$user.token}`
-            }
-        })
-        const data=await response.json();
-        userToUpdate=data.data;
+        userToUpdate=employeeId;
         showUpdateModal=true;
     }catch(e){
         console.log(e.message)
@@ -209,24 +310,44 @@ const handleUpdateEmployee=async(employeeId)=>{
 
 const handleActivateEmployee=async(employeeId)=>{
     try{
-        const response=await fetch(`http://localhost:3000/api/v1/employees/${employeeId}/activate`,{
-                method:'POST',
-                headers:{
-                    'Authorization':`Bearer ${token}`
+        const mutation = `mutation ActivateEmployee($employeeId: ID!) {
+                activateEmployee(employeeId: $employeeId) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            })
+            }`
 
-            if(response.ok){
-                toast.success('Employee Activated successfully', {
-                    duration: 5000,
-                    position: 'top-center',
-                });
-                employeesListData=await fetchDeletedEmployees();
-            }else{
-                toast.error('You are not authorized to delete this employee',{
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query: mutation,
+            variables:{
+                employeeId
+            }
+                }),
+            });
+            let responseBody=await response.json()
+
+            if(responseBody.errors){
+                toast.error('You are not authorized to activate this employee',{
                     duration:3000
+                });   
+            }
+            else{
+                toast.success('Employee activated successfully', {
+                    duration: 5000,
+                    position: 'top-center', 
                 });
-            
+                employeesListData=await fetchActiveEmployees();
             }
     }catch(error){
         console.log(error.message)
@@ -245,24 +366,32 @@ const handleActivateEmployee=async(employeeId)=>{
                 });
             }
             else{
-                let url=`http://localhost:3000/api/v1/employees?offset=${offset}&&limit=${limit}`;
+                const params={}
 
-            if (searchInput.trim() !== '') {
-            url += `&search=${encodeURIComponent(searchInput.trim())}`;
-            }
+                if(searchInput) params.search=searchInput;
+                if(selectedOption) params.sortBy=selectedOption;
+                if(selectedOption && orderOption) params.order=orderOption;
+                showDeletedEmployees?params.deleted='true':''
+                params.offset=offset;
 
-            if (selectedOption.trim() !== '') {
-                url += `&sortBy=${encodeURIComponent(selectedOption.trim())}`;
-            }
+                const response = await fetch(`http://localhost:4000/graphql`, {
+                    method: "POST",
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization':`Bearer ${$user.token}`
+                    },
+                    body: JSON.stringify({
+                    query: mutation,
+                    variables:{
+                        input: params
+                            }
+                        }),
+                    });
+                let responseBody=await response.json()
 
-            if(selectedOption && orderOption) url += `&order=${orderOption}`
-                const response=await fetch(url,{
-                    headers:{
-                        'Authorization':`Bearer ${token}`
-                    }
-                })
-                const data=await response.json();
-                employeesListData=data;
+                if(responseBody.data?.listAllEmployees?.message) employeesListData='';
+                else employeesListData = responseBody.data?.listAllEmployees;
                 }
         }catch(error){
             console.log( e.message)
@@ -322,22 +451,19 @@ const handleActivateEmployee=async(employeeId)=>{
         </div>
     </div>
     
-    {#if employeesListData}
+    {#if employeesListData?.data}
         <EmployeeListTable {employeesListData} {showDeletedEmployees} {handleActivateEmployee} {handleDeleteEmployee} {handleUpdateEmployee} />
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center px-3">
+            <div>
+              <LimitDropdown {limit} on:limitChange={(event)=>limit=event.detail.limit}  />
+            </div>
+            <div><Pagination totalPages={employeesListData.metadata?.totalPages || '0'} currentPage={employeesListData.metadata?.currentPage || '0'} onPageChange={handlePageChange} /></div>
+            <div>{(employeesListData.metadata.currentPage-1)*limit+1} - {(employeesListData.metadata?.currentPage-1)*limit+1 + (employeesListData.data.length -1)} of {employeesListData.metadata.totalEmployees}</div>
+          </div>
     {:else}
     <h3 class="text-center" style="margin-top:15%; color:#B4B4B8">No such employees found in the system</h3>
     {/if}
 
-    <!-- Pagination -->
-
-    {#if employeesListData}
-      <div class="d-flex justify-content-between align-items-center px-3">
-        <div>
-          <LimitDropdown {limit} on:limitChange={(event)=>limit=event.detail.limit}  />
-        </div>
-        <div><Pagination totalPages={employeesListData.metadata.totalPages} currentPage={employeesListData.metadata.currentPage} onPageChange={handlePageChange} /></div>
-        <div>{(employeesListData.metadata.currentPage-1)*limit+1} - {(employeesListData.metadata.currentPage-1)*limit+1 + (employeesListData.data.length -1)} of {employeesListData.metadata.totalEmployees}</div>
-      </div>
-    {/if}
 
 </div>

@@ -7,16 +7,34 @@
 
   const fetchEmployeeInfo=async()=>{
     try{
-      const response = await fetch(`http://localhost:3000/api/v1/me`, {
-          method: "GET",
-          headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              'Authorization':`Bearer ${$user.token}`
-          }
-          });
-        const data=await response.json();
-        return data;
+      const query=`query GetLoggedInEmployeesDetails {
+        getLoggedInEmployeesDetails {
+            ... on getLoggedInEmployeesDetails {
+                data {
+                    name
+                    designation
+                    profilePictureURL
+                }
+            }
+            ... on errorMessage {
+                error
+            }
+        }
+      }
+      `
+      const response = await fetch(`http://localhost:4000/graphql`, {
+              method: "POST",
+              headers: {
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                  'Authorization':`Bearer ${$user.token}`
+              },
+              body: JSON.stringify({
+                  query
+                  }),
+              });
+      let responseBody=await response.json();
+      return responseBody.data.getLoggedInEmployeesDetails;
     }catch(e){
       console.log(e.message)
     }

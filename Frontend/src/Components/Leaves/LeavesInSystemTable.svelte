@@ -88,18 +88,18 @@
               <td class="align-middle">Anonymous</td>
               <td class="align-middle">NA</td>
             {/if}
-            {#if leave.reason.length < 50}
+            {#if leave.reason?.length < 50}
                 <td class="align-middle">{leave.reason}</td>
               {:else}
                 <td class="align-middle"><p class="mb-0" data-bs-toggle="popover" title="Rejection Reason" data-bs-content={leave.reason}>{leave.reason.substr(0,50)}{leave.reason.length >=50?'...':''}</p>
                 </td>
-              {/if}
+            {/if}
             <td class="align-middle">{leave.dates[0]}</td>
             <td class="align-middle">{leave.dates[leave.dates.length-1]}</td>
             <td class="align-middle"><p class="mb-0" data-bs-toggle="popover" title="Leave Dates" data-bs-content={leave.dates}>{leave.dates.length}</p>
             </td>
             {#if leave.status === 'rejected'}
-              {#if leave.rejectionReason.length < 30}
+              {#if leave.rejectionReason?.length < 30}
                 <td class="align-middle">{leave.rejectionReason}</td>
               {:else}
                 <td class="align-middle"><p class="mb-0" data-bs-toggle="popover" title="Rejection Reason" data-bs-content={leave.rejectionReason}>{leave.rejectionReason.substr(0,30)}{leave.rejectionReason.length >=30?'...':''}</p>

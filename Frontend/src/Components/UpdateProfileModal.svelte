@@ -20,7 +20,7 @@
   
     const formFields = [
       { type: 'text', name: 'name', label: 'Name', placeholder: 'Enter name' },
-      { type: 'number', name: 'mobileNumber', label: 'Mobile Number', placeholder: 'Enter Mobile Number' },
+      { type: 'text', name: 'mobileNumber', label: 'Mobile Number', placeholder: 'Enter Mobile Number' },
       { type: 'text', name: 'profilePictureURL', label: 'Profile Picture URL', placeholder: 'Enter URL' },
     ];
 
@@ -29,29 +29,47 @@
   
   const handleSubmit=async(formData)=>{
       try{
+          const mutation = `mutation UpdateMeProfile($input: updateMeProfile!) {
+              updateMeProfile(input: $input) {
+                  ... on successMessage {
+                      message
+                  }
+                  ... on errorMessage {
+                      error
+                  }
+              }
+          }`
 
-          const response = await fetch(`http://localhost:3000/api/v1/me`, {
-          method: "PATCH",
-          headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              'Authorization':`Bearer ${$user.token}`
-          },
-          body: JSON.stringify(formData),
+          const response = await fetch(`http://localhost:4000/graphql`, {
+              method: "POST",
+              headers: {
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                  'Authorization':`Bearer ${$user.token}`
+              },
+              body: JSON.stringify({
+                  query:mutation,
+                  variables:{
+                    input: formData
+                  }
+                }),
           });
-           data=await response.json()
-           if(response.ok){
-              isSuccess=true;
-              success='Profile Updated Successfully'
-              error=false
-              isError=false;
-           }else{
+
+          let responseBody=await response.json();
+
+          if(responseBody.errors){
               isError=true;
               error=data.error||data.message;
               success=false;
               isSuccess=false;
-           }
-          document.querySelector('.modal-content').scrollTop = 0;
+          }else{
+              isSuccess=true;
+              success='Profile Updated Successfully'
+              error=false
+              isError=false;
+          }
+
+        document.querySelector('.modal-content').scrollTop = 0;
       }catch(error){
           console.log(error)
       }

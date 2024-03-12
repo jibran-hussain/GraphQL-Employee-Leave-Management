@@ -50,14 +50,36 @@
 
     const fetchLeaveSummary=async()=>{
         try{
-            const response=await fetch(`http://localhost:3000/api/v1/me/leaves/summary`,{
-                method:'GET',
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+            
+            const query=`query GetMeLeavesSummary {
+                getMeLeavesSummary {
+                    ... on getLeavesSummary {
+                        data {
+                            approvedLeaves
+                            underProcessLeaves
+                            rejectedLeaves
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
+            }`
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+                query
+                }),
             });
-            const data=await response.json();
-            leaveTypesSummary=data;
+            let responseBody=await response.json()
+            leaveTypesSummary=responseBody.data.getMeLeavesSummary;
+
         }catch(error){
             console.log(error.message)
         }
@@ -71,26 +93,46 @@
 
     const handleDeleteLeaveButton=async (leaveId)=>{ 
         try{
-            const response=await fetch(`http://localhost:3000/api/v1/me/leaves/${leaveId}`,{
-                method:"DELETE",
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+            const mutation = `mutation DeleteLeave($leaveId: ID!) {
+                deleteLeave(leaveId: $leaveId) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            })
-            const data=await response.json();
-            if(response.ok){
+            }
+            `
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+                query:mutation,
+                variables:{
+                    leaveId
+                }
+                }),
+            });
+            let responseBody=await response.json()
+
+            if(responseBody.errors){
+                toast.error(responseBody.errors[0].extensions.response.body.error || responseBody.errors[0].extensions.response.body.message,{
+                        duration:3000
+                    });
+            }else{
                 toast.success('Leave deleted successfully', {
                         duration: 5000,
                         position: 'top-center',
                     });
-            await fetchLeaves()
-            await fetchLeaveSummary();
+                await fetchLeaves()
+                await fetchLeaveSummary();
             }
-            else{
-                toast.error(data.error || data.message,{
-                        duration:3000
-                    });
-            }
+
         }catch(error){
             console.log(error.message)
         }

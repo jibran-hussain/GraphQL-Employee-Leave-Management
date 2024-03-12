@@ -16,18 +16,47 @@
 
     const fetchLeaves=async()=>{
         try{
-            let url=`http://localhost:3000/api/v1/leaves/${leaveIdToFetch}`;
-            const response=await fetch(url,{
-                method:'GET',
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
-                }
-            });
-            if(response.ok){
-                let data=await response.json();
-                leave=data;
+
+            const query = `query GetSpecificLeaveInSystem($leaveId: ID!) {
+              getSpecificLeaveInSystem(leaveId: $leaveId) {
+                  ... on getSpecificLeave {
+                      data {
+                          id
+                          reason
+                          dates
+                          status
+                          rejectionReason
+                          createdAt
+                          updatedAt
+                          employeeId
+                      }
+                  }
+                  ... on errorMessage {
+                      error
+                  }
+              }
+          }`
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query,
+            variables:{
+                leaveId: leaveIdToFetch
             }
-            else leave= undefined;
+                }),
+            });
+          
+          let responseBody=await response.json()
+
+          if(responseBody.errors) leave = undefined;
+          else leave = responseBody.data.getSpecificLeaveInSystem;
+            
         }catch(error){
             console.log(error.message)
         }
@@ -39,14 +68,34 @@
 
     const handleAcceptLeaveButton=async (leaveId)=>{
         try{
-            const response=await fetch(`http://localhost:3000/api/v1/leaves/${leaveId}/accept`,{
-                method:"POST",
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+          const mutation = `mutation AcceptLeave($leaveId: ID!) {
+                acceptLeave(leaveId: $leaveId) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            })
+            }
+            `
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query:mutation,
+            variables:{
+                leaveId
+            }
+                }),
+            });
+            let responseBody=await response.json()
 
-            if(response && response.ok === false){
+            if(responseBody.errors){
                 toast.error('You cannot approve the leave of this employee',{
                     duration:3000
                 });
@@ -56,9 +105,8 @@
                     position: 'top-center',
                 });
                 await fetchLeaves()
+                await fetchLeaveSummary()
             }
-
-            console.log(response)
         }catch(error){
             console.log(error)
         }
@@ -66,29 +114,48 @@
 
     const handleRejectionSubmit = async(event) => {
     try{
-      const response = await fetch(`http://localhost:3000/api/v1/leaves/${event.detail.leaveId}/reject`, {
-        method: "POST",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            'Authorization':`Bearer ${$user.token}`
-        },
-        body: JSON.stringify({rejectionReason:event.detail.rejectionReason}),
-        });
-      const data=await response.json();
-      if(response.ok){
-        toast.success('Leave Rejected', {
-                duration: 5000,
-                position: 'top-center',
-            });
-            await fetchLeaves();
-      }
-      else{
-        toast.error(data.error || data.message,{
-                duration:3000
-            });
-      }
+      const mutation = `mutation RejectLeave($leaveId: ID!, $rejectionReason: String!) {
+            rejectLeave(leaveId: $leaveId, rejectionReason: $rejectionReason) {
+                ... on successMessage {
+                    message
+                }
+                ... on errorMessage {
+                    error
+                }
+            }
+        }
+        `
 
+        const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query:mutation,
+            variables:{
+                leaveId:event.detail.leaveId,
+                rejectionReason: event.detail.rejectionReason
+            }
+                }),
+            });
+            let responseBody=await response.json()
+
+            if(responseBody.errors){
+                toast.error(responseBody.errors[0].extensions.response.body.error || responseBody.errors[0].extensions.response.body.message,{
+                    duration:3000
+                });
+            }
+            else{
+                toast.success('Leave Rejected', {
+                    duration: 5000,
+                    position: 'top-center',
+                });
+                await fetchLeaves();
+                await fetchLeaveSummary()
+            }
     }catch(e){
         console.log(e.message)
     }
@@ -161,14 +228,24 @@
               <tr>
                 <td class="align-middle">{leave.data.id}</td>
                 <td class="align-middle">{leave.data.employeeId}</td>
-                <td class="align-middle text-wrap">{leave.data.reason}</td>
+                {#if leave.data.reason?.length < 50}
+                  <td class="align-middle text-wrap">{leave.data.reason}</td>
+                {:else}
+                  <td class="align-middle text-wrap"><p class="mb-0" data-bs-toggle="popover" title="Rejection Reason" data-bs-content={leave.data.reason}>{leave.data.reason.substr(0,50)}{leave.data.reason.length >=50?'...':''}</p>
+                    </td>
+                {/if}
                 <td class="align-middle">{leave.data.dates[0]}</td>
                 <td class="align-middle">{leave.data.dates[leave.data.dates.length-1]}</td>
                 <td class="align-middle"><p class="mb-0" data-bs-toggle="popover" title="Leave Dates" data-bs-content={leave.data.dates}>{leave.data.dates.length}</p>
                 </td>
                 <td class="align-middle">{leave.data.status}</td>
                 {#if leave.data.status === 'rejected'}
-                  <td class="align-middle">{leave.data.rejectionReason}</td>
+                  {#if leave.data.rejectionReason?.length < 30}
+                    <td class="align-middle">{leave.data.rejectionReason}</td>
+                  {:else}
+                    <td class="align-middle"><p class="mb-0" data-bs-toggle="popover" title="Rejection Reason" data-bs-content={leave.data.rejectionReason}>{leave.data.rejectionReason.substr(0,30)}{leave.data.rejectionReason.length >=30?'...':''}</p>
+                    </td>
+                  {/if}
                 {/if}
                 {#if leave.data.status === 'Under Process'}
                   <td class="align-middle"><button type="button" class="btn btn-success" on:click={()=>{handleAcceptLeaveButton(leave.data.id)}}>Accept</button></td>

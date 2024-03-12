@@ -14,16 +14,39 @@
 
     const fetchEmployeeDetail=async()=>{
         try{
-            const response = await fetch(`http://localhost:3000/api/v1/me/`,{
-                method:"GET",
-                headers:{
-                    Accept:'application/json',
-                    'Content-Type':'application/json',
-                    Authorization:`Bearer ${$user.token}`
+            const query=`query GetLoggedInEmployeesDetails {
+                getLoggedInEmployeesDetails {
+                    ... on getLoggedInEmployeesDetails {
+                        data {
+                            id
+                            name
+                            email
+                            designation
+                            mobileNumber
+                            salary
+                            role
+                            profilePictureURL
+                            leavesLeft
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            });
-            const userToUpdate=await response.json();
-            loggedInEmployee=userToUpdate.data;
+            }`
+            const response = await fetch(`http://localhost:4000/graphql`, {
+                    method: "POST",
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization':`Bearer ${$user.token}`
+                    },
+                    body: JSON.stringify({
+                        query
+                        }),
+                    });
+            let responseBody=await response.json();
+            loggedInEmployee=responseBody.data.getLoggedInEmployeesDetails.data;
         }catch(error){
             console.log(error.message)
         }
@@ -31,25 +54,45 @@
     
     const handleDeleteAccount=async()=>{
         try{
-            const response=await fetch(`http://localhost:3000/api/v1/me`,{
-                method:'DELETE',
-                headers:{
-                    'Authorization':`Bearer ${$user.token}`
+            
+            const mutation = `mutation DeleteMe {
+                deleteMe {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            })
+            }`
 
-            if(response.ok){
-                toast.success('Account deleted successfully', {
-                    duration: 5000,
-                    position: 'top-center', 
-                });
-            goto('/');
-            }else{
+            const response = await fetch(`http://localhost:4000/graphql`, {
+                    method: "POST",
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization':`Bearer ${$user.token}`
+                    },
+                    body: JSON.stringify({
+                        query:mutation
+                        }),
+            });
+
+            let responseBody=await response.json();
+
+            if(responseBody.errors){
                 const data=await response.json();
                 toast.error(data.error,{
                     duration:5000
                 });
+            }else{
+                toast.success('Account deleted successfully', {
+                    duration: 5000,
+                    position: 'top-center', 
+                });
+                goto('/');
             }
+
         }catch(error){
             console.log(error.message)
         }

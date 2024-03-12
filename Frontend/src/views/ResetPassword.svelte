@@ -17,32 +17,49 @@
 
     const handleSubmit=async(formData)=>{
         try{
+            const mutation = `mutation ResetPassword($input: resetPassword!) {
+                resetPassword(input: $input) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
+                }
+            }`
+
             const {oldPassword,newPassword,confirmPassword} = formData;
             if(!oldPassword || !newPassword || !confirmPassword){
                 isError=true;
                 error= `All fields are mandatory`
             }
             else{
-                const response = await fetch(`http://localhost:3000/api/v1/me/password`, {
-            method: "PATCH",
+                const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
             headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                Authorization:`Bearer ${$user.token}`
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify({
+                query:mutation,
+                variables:{
+                    input: formData
+                }
+                }),
             });
-             data=await response.json()
-            
-            if(response.ok){
+            let responseBody=await response.json()
+
+            if(responseBody.errors){
+                isError=true;
+                error=responseBody.errors[0].extensions.response.body.error || responseBody.errors[0].extensions.response.body.message;
+            }else{
                 error=''
+                isError=false
                 success=`Password changed successfully`
                 isSuccess=true;
-            }else{
-                isError=true;
-                error=data.error
             }
-            }
+        }
             
         }catch(error){
             console.log(error)

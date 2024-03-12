@@ -13,7 +13,7 @@
     let leaveTypesSummary;
     let leaveStatus='Under Process';
     let searchInput='';
-    let limit=10;
+    let limit=1;
 
     $:{
         if(limit){
@@ -24,19 +24,63 @@
 
     const fetchLeaves=async()=>{
         try{
-            let url=`http://localhost:3000/api/v1/employees/${employeeId}/leaves?limit=${limit}&status=${leaveStatus}&search=${searchInput}`;
-            const response=await fetch(url,{
-                method:'GET',
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+            const params = {}
+            if(limit) params.limit = limit;
+            if(leaveStatus) params.status = leaveStatus
+            if(searchInput)  params.search = searchInput
+
+            const query=`query GetAllLeavesOfAnEmployee($employeeId: ID!, $params: listAllLeavesOfAnEmployee) {
+                getAllLeavesOfAnEmployee(employeeId: $employeeId, params: $params) {
+                    ... on getAllLeavesOfAnEmployee {
+                        data {
+                            id
+                            reason
+                            dates
+                            status
+                            rejectionReason
+                            createdAt
+                            updatedAt
+                            Employee {
+                                name
+                                designation
+                            }
+                        }
+                        metadata {
+                            currentPage
+                            totalPages
+                            totalLeaveDays
+                            timesApplied
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
+                    ... on successMessage {
+                        message
+                    }
                 }
+            }`
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+                method: "POST",
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization':`Bearer ${$user.token}`
+                },
+                body: JSON.stringify({
+                query,
+                variables:{
+                    employeeId,
+                    params
+                }
+                    }),
             });
-            if(response.ok){
-                let data=await response.json();
-                console.log(data)
-                return data;
-            }
-            else return undefined;
+            let responseBody=await response.json()
+
+            if(responseBody.errors) return undefined
+            else return responseBody.data.getAllLeavesOfAnEmployee;
+
         }catch(error){
             console.log(error.message)
         }
@@ -44,14 +88,38 @@
 
     const fetchLeaveSummary=async()=>{
         try{
-            const response=await fetch(`http://localhost:3000/api/v1/leaves/employees/${employeeId}/summary`,{
-                method:'GET',
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+            const query = `query GetEmployeeLeaveSummary($employeeId: ID!) {
+                getEmployeeLeaveSummary(employeeId: $employeeId) {
+                    ... on getLeavesSummary {
+                        data {
+                            approvedLeaves
+                            underProcessLeaves
+                            rejectedLeaves
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
+            }`
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+                query,
+                variables:{
+                    employeeId
+                }
+                }),
             });
-            const data=await response.json();
-            return data;
+            let responseBody=await response.json()
+            return responseBody.data.getEmployeeLeaveSummary;
+
         }catch(error){
             console.log(error.message)
         }
@@ -64,17 +132,63 @@
                     duration:3000
                 });
       }else{
-        const response=await fetch(`http://localhost:3000/api/v1/employees/${employeeId}/leaves?limit=${limit}&status=${leaveStatus}&offset=${offset}`,{
-                method:'GET',
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+        const params = {}
+            if(limit) params.limit = limit;
+            if(leaveStatus) params.status = leaveStatus
+            if(searchInput)  params.search = searchInput
+            if(offset) params.offset= offset
+
+            const query=`query GetAllLeavesOfAnEmployee($employeeId: ID!, $params: listAllLeavesOfAnEmployee) {
+                getAllLeavesOfAnEmployee(employeeId: $employeeId, params: $params) {
+                    ... on getAllLeavesOfAnEmployee {
+                        data {
+                            id
+                            reason
+                            dates
+                            status
+                            rejectionReason
+                            createdAt
+                            updatedAt
+                            Employee {
+                                name
+                                designation
+                            }
+                        }
+                        metadata {
+                            currentPage
+                            totalPages
+                            totalLeaveDays
+                            timesApplied
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
+                    ... on successMessage {
+                        message
+                    }
                 }
+            }`
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+                method: "POST",
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization':`Bearer ${$user.token}`
+                },
+                body: JSON.stringify({
+                query,
+                variables:{
+                    employeeId,
+                    params
+                }
+                    }),
             });
-      const data= await response.json();
-      if(response.ok){
-            leaves= data;
-            }
-            else return undefined;
+            let responseBody=await response.json()
+
+            if(responseBody.errors) leaves= undefined
+            else leaves= responseBody.data.getAllLeavesOfAnEmployee;
       }
       
     }catch(error){
@@ -90,14 +204,34 @@
 
     const handleAcceptLeaveButton=async (leaveId)=>{
         try{
-            const response=await fetch(`http://localhost:3000/api/v1/leaves/${leaveId}/accept`,{
-                method:"POST",
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+            const mutation = `mutation AcceptLeave($leaveId: ID!) {
+                acceptLeave(leaveId: $leaveId) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            })
+            }
+            `
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query:mutation,
+            variables:{
+                leaveId
+            }
+                }),
+            });
+            let responseBody=await response.json()
 
-            if(response && response.ok === false){
+            if(responseBody.errors){
                 toast.error('You cannot approve the leave of this employee',{
                     duration:3000
                 });
@@ -106,12 +240,9 @@
                     duration: 5000,
                     position: 'top-center',
                 });
-                console.log('boya')
-                leaves=await fetchLeaves()
+                leaves=await fetchLeaves();
                 leaveTypesSummary=await fetchLeaveSummary()
             }
-
-            console.log(response)
         }catch(error){
             console.log(error)
         }
@@ -119,29 +250,48 @@
 
     const handleRejectionSubmit = async(event) => {
     try{
-      const response = await fetch(`http://localhost:3000/api/v1/leaves/${event.detail.leaveId}/reject`, {
-        method: "POST",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            'Authorization':`Bearer ${$user.token}`
-        },
-        body: JSON.stringify({rejectionReason:event.detail.rejectionReason}),
-        });
-      const data=await response.json();
-      if(response.ok){
-        toast.success('Leave Rejected', {
-                duration: 5000,
-                position: 'top-center',
+        const mutation = `mutation RejectLeave($leaveId: ID!, $rejectionReason: String!) {
+            rejectLeave(leaveId: $leaveId, rejectionReason: $rejectionReason) {
+                ... on successMessage {
+                    message
+                }
+                ... on errorMessage {
+                    error
+                }
+            }
+        }
+        `
+
+        const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query:mutation,
+            variables:{
+                leaveId:event.detail.leaveId,
+                rejectionReason: event.detail.rejectionReason
+            }
+                }),
             });
-            leaves=await fetchLeaves();
-            leaveTypesSummary=await fetchLeaveSummary()
-      }
-      else{
-        toast.error(data.error || data.message,{
-                duration:3000
-            });
-      }
+            let responseBody=await response.json()
+
+            if(responseBody.errors){
+                toast.error(responseBody.errors[0].extensions.response.body.error || responseBody.errors[0].extensions.response.body.message,{
+                    duration:3000
+                });
+            }
+            else{
+                toast.success('Leave Rejected', {
+                    duration: 5000,
+                    position: 'top-center',
+                });
+                leaves=await fetchLeaves();
+                leaveTypesSummary=await fetchLeaveSummary()
+            }
 
     }catch(e){
         console.log(e.message)

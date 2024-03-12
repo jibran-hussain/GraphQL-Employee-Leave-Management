@@ -16,19 +16,46 @@
 
     const fetchLeaves=async()=>{
         try{
-            let url=`http://localhost:3000/api/v1/me/leaves/${leaveIdToFetch}`;
-            const response=await fetch(url,{
-                method:'GET',
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+            const query= `query GetSpecificMeLeave($leaveId: ID!) {
+                getSpecificMeLeave(leaveId: $leaveId) {
+                    ... on getSpecificMeLeave {
+                        data {
+                            id
+                            reason
+                            dates
+                            status
+                            rejectionReason
+                            createdAt
+                            updatedAt
+                            employeeId
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            });
-            if(response.ok){
-                let data=await response.json();
-                console.log(data,'hahahaha')
-                leave=data;
-            }
-            else leave= undefined;
+            }`
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+              method: "POST",
+              headers: {
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                  'Authorization':`Bearer ${$user.token}`
+              },
+              body: JSON.stringify({
+                  query,
+                  variables:{
+                    leaveId:leaveIdToFetch
+                  }
+                }),
+          });
+
+          let responseBody=await response.json();
+
+          if(responseBody.errors) leave = undefined;
+          else leave = responseBody.data.getSpecificMeLeave
+
         }catch(error){
             console.log(error.message)
         }
@@ -128,14 +155,24 @@
               <tr>
                 <td class="align-middle">{leave.data.id}</td>
                 <td class="align-middle">{leave.data.employeeId}</td>
-                <td class="align-middle text-wrap">{leave.data.reason}</td>
+                {#if leave.data.reason?.length < 50}
+                  <td class="align-middle text-wrap">{leave.data.reason}</td>
+                {:else}
+                  <td class="align-middle text-wrap"><p class="mb-0" data-bs-toggle="popover" title="Rejection Reason" data-bs-content={leave.data.reason}>{leave.data.reason.substr(0,50)}{leave.data.reason.length >=50?'...':''}</p>
+                    </td>
+                {/if}
                 <td class="align-middle">{leave.data.dates[0]}</td>
                 <td class="align-middle">{leave.data.dates[leave.data.dates.length-1]}</td>
                 <td class="align-middle"><p class="mb-0" data-bs-toggle="popover" title="Leave Dates" data-bs-content={leave.data.dates}>{leave.data.dates.length}</p>
                 </td>
                 <td class="align-middle">{leave.data.status}</td>
                 {#if leave.data.status === 'rejected'}
-                  <td class="align-middle">{leave.data.rejectionReason}</td>
+                    {#if leave.data.rejectionReason?.length < 30}
+                        <td class="align-middle">{leave.data.rejectionReason}</td>
+                    {:else}
+                        <td class="align-middle"><p class="mb-0" data-bs-toggle="popover" title="Rejection Reason" data-bs-content={leave.data.rejectionReason}>{leave.data.rejectionReason.substr(0,30)}{leave.data.rejectionReason.length >=30?'...':''}</p>
+                        </td>
+                    {/if}
                 {/if}
                 {#if leave.data.status === 'Under Process'}
                     <td class="align-middle">  <button type="button" class="btn btn-danger" on:click={()=>{handleDeleteLeaveButton(leave.id)}}>Delete</button></td>

@@ -28,34 +28,51 @@ const handleSubmit=async(formData)=>{
             let formatedFromDate=formatDate(fromDate);
         let  formatedToDate=formatDate(toDate);
 
-        const response = await fetch(`http://localhost:3000/api/v1/me/leaves`, {
+        const mutation = `mutation ApplyLeave($input: applyLeave!) {
+            applyLeave(input: $input) {
+                ... on successMessage {
+                    message
+                }
+                ... on errorMessage {
+                    error
+                }
+            }
+        }
+        `
+
+        const response = await fetch(`http://localhost:4000/graphql`, {
             method: "POST",
             headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
                 'Authorization':`Bearer ${$user.token}`
             },
             body: JSON.stringify({
-                fromDate:formatedFromDate,
-                toDate:formatedToDate,
-                reason:formData.reason
-            }),
+            query:mutation,
+            variables:{
+                input:{
+                    fromDate:formatedFromDate,
+                    toDate:formatedToDate,
+                    reason:formData.reason
+            }
+            }
+                }),
             });
+            let responseBody=await response.json()
 
-            const data=await response.json();
-            console.log(data)
-            if(response.ok){
+            if(responseBody.errors){
+                isError=true;
+                error=responseBody.errors[0].extensions.response.body.error || responseBody.errors[0].extensions.response.body.message;
+                isSuccess=false
+                success=''
+            }
+            else{
                 isSuccess=true;
                 success='Leave applied successfully';
                 isError=false;
                 error=''
-            }else{
-                isError=true;
-                error=data.error || data.message;
-                isSuccess=false
-                success=''
             }
-            }
+        }
         
     }catch(error){
         console.log(error)

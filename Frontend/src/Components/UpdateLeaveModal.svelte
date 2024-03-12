@@ -30,32 +30,70 @@
   
   const handleSubmit=async(formData)=>{
       try{
-          let formatedFromDate=formatDate(formData.fromDate);
-          let  formatedToDate=formatDate(formData.toDate);
-          const response = await fetch(`http://localhost:3000/api/v1/me/leaves/${leaveToUpdate}`, {
-          method: "PATCH",
-          headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              'Authorization':`Bearer ${$user.token}`
-          },
-          body: JSON.stringify({
-            fromDate:formatedFromDate,
-            toDate:formatedToDate,
-            reason:formData.reason
-          }),
-          });
-           data=await response.json()
-          // show the error
-          if(data.error){
-              isError=true;
-              error=data.error
-          }else{
-            isSuccess=true;
-            success='Leave Updated Successfully'
-            error=false
+        console.log(formData)
+          const {fromDate,toDate,reason} = formData
+          if(Object.keys(formData).length === 0){
+            isError=true;
+            error=`Atleast one field is required to update the leave`
+          }else if((fromDate && !toDate) || (!fromDate && toDate)){
+            isError=true;
+            error=`Start and end date is mandatory`
+          }
+
+          else{
+            let formatedFromDate;
+            let  formatedToDate;
+
+            if(fromDate) formatedFromDate=formatDate(fromDate);
+            if(toDate) formatedToDate=formatDate(toDate);
+
+
+            const mutation=`mutation UpdateLeave($leaveId: ID!,$input: updateLeave!) {
+                updateLeave(leaveId: $leaveId, input: $input) {
+                    ... on successMessage {
+                        message
+                    }
+                    ... on errorMessage {
+                        error
+                    }
+                }
+            }
+            `
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+              method: "POST",
+              headers: {
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                  'Authorization':`Bearer ${$user.token}`
+              },
+              body: JSON.stringify({
+                  query:mutation,
+                  variables:{
+                    leaveId: leaveToUpdate,
+                    input:{
+                      fromDate:formatedFromDate,
+                      toDate:formatedToDate,
+                      reason:reason
+                    }
+                  }
+                  }),
+              });
+              let responseBody=await response.json()
+
+              if(responseBody.errors){
+                isError=true;
+                error=responseBody.errors[0].extensions.response.body.error || responseBody.errors[0].extensions.response.body.message;
+              }else{
+                isSuccess=true;
+                success='Leave Updated Successfully'
+                error=false
+              }
+            
           }
           document.querySelector('.modal-content').scrollTop = 0;
+          
+          
 
           
       }catch(error){
