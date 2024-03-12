@@ -1004,9 +1004,7 @@ paths:
                   minLength: 3
                   example: Administrator 1
                 mobileNumber:
-                  type: number
-                  minimum: 1000000000 
-                  maximum: 9999999999
+                  type: string
                   description: Mobile number of the employee (must be exactly 10 digits)
                   example: 9496484456
                 profilePictureURL:
@@ -1586,12 +1584,12 @@ paths:
               properties:
                 fromDate:
                   type: string
-                  pattern: '^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$'
+                  # pattern: '^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$'
                   description: Start date of the leave (dd-mm-yyyy)
                   example: 14-05-2024
                 toDate:
                   type: string
-                  pattern: '^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$'
+                  # pattern: '^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$'
                   description: End date of the leave (dd-mm-yyyy)
                   example: 17-05-2024
                 reason:
