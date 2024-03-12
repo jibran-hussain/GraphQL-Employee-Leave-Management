@@ -69,63 +69,24 @@ export const leaveResolver={
     },
     Query:{
         async getAllLeavesOfLoggedInEmployee(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.getAllLeavesOfLoggedInEmployee();
-                console.log(response,'hi')
-                return response;
-            }catch(error){
-                console.error(error.message);
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.getAllLeavesOfLoggedInEmployee();
         },
 
         async getAllLeavesOfAnEmployee(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.getAllLeavesOfAnEmployee(args.employeeId);
-                console.log(response)
-                return response;
-            }catch(error){
-                console.error(error.message);
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.getAllLeavesOfAnEmployee(args.employeeId,args.params);
         },
 
         async getSpecificMeLeave(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.getSpecificMeLeave(args.leaveId);
-                console.log(response)
-                return response;
-            }catch(error){
-                console.error(error.message);
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.getSpecificMeLeave(args.leaveId);
         },
         async getSpecificLeaveInSystem(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.getSpecificLeaveInSystem(args.leaveId);
-                return response;
-            }catch(error){
-                console.log(error.message)
-                return error.extensions.response.body
-            }
+            return dataSources.EmployeeAPI.getSpecificLeaveInSystem(args.leaveId);
         },
         async getAllLeavesInSystem(_,args,{dataSources}){
-            try{
-                const response= await dataSources.EmployeeAPI.getAllLeavesInSystem(args.input);
-                return response;
-            }catch(error){
-                console.log(error);
-                return error.extensions.response.body
-            }
+          return dataSources.EmployeeAPI.getAllLeavesInSystem(args.params)
         },
         async getSystemLeaveSummary(_,args,{dataSources}){
-            try{
-                const response= await dataSources.EmployeeAPI.getSystemLeaveSummary();
-                return response;
-            }catch(error){
-                console.log(error.message);
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.getSystemLeaveSummary();
         },
         async getEmployeeLeaveSummary(_,args,{dataSources}){
             try{
@@ -139,13 +100,7 @@ export const leaveResolver={
     },
     Mutation:{
         async applyLeave(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.applyLeave(args.input);
-                console.log(response)
-                return response;
-            }catch(error){
-               return error.extensions.response.body;
-            }
+           return await dataSources.EmployeeAPI.applyLeave(args.input);
         },
 
         async deleteLeave(_,args,{dataSources}){
@@ -158,23 +113,15 @@ export const leaveResolver={
             }
         },
         async rejectLeave(_,args,{dataSources}){
-            try{
-                const response= await dataSources.EmployeeAPI.rejectLeave(args.leaveId,args.rejectionReason);
-                return response;
-            }catch(error){
-                console.log(error.message)
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.rejectLeave(args.leaveId,args.rejectionReason);
+        },
+
+        async acceptLeave(_,args,{dataSources}){
+            return dataSources.EmployeeAPI.acceptLeave(args.leaveId)
         },
 
         async updateLeave(_,args,{dataSources}){
-            try{
-                const response= await dataSources.EmployeeAPI.updateLeave(args.leaveId,args.input);
-                return response;
-            }catch(error){
-                console.log(error.message);
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.updateLeave(args.leaveId,args.input)
         }
     }
 }

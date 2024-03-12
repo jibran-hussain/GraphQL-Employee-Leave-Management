@@ -127,66 +127,26 @@ export const employeResolver={
 
         },
         async deleteEmployee(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.deleteEmployee(args.employeeId);
-                return response;
-
-            }catch(error){
-                console.error(error);
-                return error.extensions.response.body
-            }
+           return dataSources.EmployeeAPI.deleteEmployee(args.employeeId);
         },
 
         async activateEmployee(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.activateEmployee(args.employeeId);
-                return response;
-
-            }catch(error){
-                console.error(error);
-                return error.extensions.response.body; 
-            }
+            return  dataSources.EmployeeAPI.activateEmployee(args.employeeId)
         },
 
         async updateEmployeeProfile(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.updateEmployeeProfile(args.employeeId,args.input);
-                console.log(response,'here is the response')
-                return response;
-            }catch(error){
-                console.error(error);
-                return error.extensions.response.body
-            }
+            return dataSources.EmployeeAPI.updateEmployeeProfile(args.employeeId,args.input);
         },
 
         async updateMeProfile(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.updateMeProfile(args.input);
-                return response;
-            }catch(error){
-                console.error(error);
-                throw new Error('Internal server error'); 
-            }
+            return dataSources.EmployeeAPI.updateMeProfile(args.input);
         },
     
         async deleteMe(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.deleteMe();
-                return response;
-
-            }catch(error){
-                console.error(error);
-                throw new Error('Internal server error'); 
-            }
+            return  dataSources.EmployeeAPI.deleteMe();
         },
         async resetPassword(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.resetPassword(args.input);
-                return response;
-            }catch(error){
-                console.log(error.message)
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.resetPassword(args.input);
         }
 
     }
