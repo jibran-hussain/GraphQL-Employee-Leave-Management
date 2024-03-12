@@ -74,8 +74,10 @@ class EmployeeAPI extends RESTDataSource{
         return this.delete(`me/leaves/${leaveId}`)
     }
 
-    getAllLeavesOfAnEmployee(employeeId: number){
-        return this.get(`employees/${employeeId}/leaves`)
+    getAllLeavesOfAnEmployee(employeeId: number,params){
+        return this.get(`employees/${employeeId}/leaves`,{
+            params
+        })
     }
 
     getSpecificLeaveInSystem(leaveId:number){
@@ -92,6 +94,10 @@ class EmployeeAPI extends RESTDataSource{
         return this.post(`leaves/${leaveId}/reject`,{
             body: {rejectionReason}
         })
+    }
+
+    acceptLeave(leaveId: number){
+        return this.post(`leaves/${leaveId}/accept`)
     }
 
     getSystemLeaveSummary(){
