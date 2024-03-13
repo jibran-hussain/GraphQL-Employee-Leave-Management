@@ -49,25 +49,7 @@
                         error
                     }
                 }
-            }
-            `
-
-
-    const {id,email,role,token}=$user;
-
-
-    $: {
-        if (showDeletedEmployees) {
-            fetchDeletedEmployees().then(data => {
-                if(data.message) employeesListData='';
-                else employeesListData=data
-            });
-        } else {
-            fetchActiveEmployees().then(data => {
-                employeesListData = data;
-            });
-        }
-}
+            }`
 
 $:{
     if(limit){
@@ -78,11 +60,13 @@ $:{
             });
         } else {
             fetchActiveEmployees().then(data => {
+                console.log(data,'active employees')
                 employeesListData = data;
             });
         }
     }
 }
+    
 
 
 
@@ -90,7 +74,8 @@ $:{
         try{
 
             const params={}
-
+            
+            if(limit) params.limit = limit;
             if(searchInput) params.search=searchInput;
             if(selectedOption) params.sortBy=selectedOption;
             if(selectedOption && orderOption) params.order=orderOption;
@@ -123,6 +108,7 @@ $:{
         try{
             const params={}
 
+            if(limit) params.limit = limit;
             if(searchInput) params.search=searchInput;
             if(selectedOption) params.sortBy=selectedOption;
             if(selectedOption && orderOption) params.order=orderOption;
@@ -155,6 +141,7 @@ $:{
         try{
             const params={}
 
+            if(limit) params.limit = limit;
             if(searchInput) params.search=searchInput;
             if(selectedOption) params.sortBy=selectedOption;
             if(selectedOption && orderOption) params.order=orderOption;
@@ -188,6 +175,7 @@ $:{
         try{
             const params={}
 
+            if(limit) params.limit = limit;
             if(searchInput) params.search=searchInput;
             if(selectedOption) params.sortBy=selectedOption;
             if(selectedOption && orderOption) params.order=orderOption;
@@ -224,6 +212,7 @@ $:{
 
         const params={}
 
+        if(limit) params.limit = limit;
         if(searchInput) params.search=searchInput;
         if(selectedOption) params.sortBy=selectedOption;
         if(selectedOption && orderOption) params.order=orderOption;
