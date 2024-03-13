@@ -29,6 +29,11 @@
   
   const handleSubmit=async(formData)=>{
       try{
+
+          if(formData.mobileNumber){
+              formData = {...formData,mobileNumber: formData.mobileNumber.toString()}
+          }
+          
           const mutation = `mutation UpdateMeProfile($input: updateMeProfile!) {
               updateMeProfile(input: $input) {
                   ... on successMessage {

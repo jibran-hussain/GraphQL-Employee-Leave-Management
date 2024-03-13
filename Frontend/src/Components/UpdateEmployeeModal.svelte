@@ -20,9 +20,9 @@
   
     const formFields = [
       { type: 'text', name: 'name', label: 'Name', placeholder: 'Enter name' },
-      { type: 'text', name: 'mobileNumber', label: 'Mobile Number', placeholder: 'Enter Mobile Number' },
+      { type: 'number', name: 'mobileNumber', label: 'Mobile Number', placeholder: 'Enter Mobile Number' },
       { type: 'password', name: 'password', label: 'Password', placeholder: 'Enter Password' },
-      { type: 'text', name: 'salary', label: 'Salary', placeholder: 'Enter salary' },
+      { type: 'number', name: 'salary', label: 'Salary', placeholder: 'Enter salary' },
       { type: 'text', name: 'designation', label: 'Designation', placeholder: 'Enter designation' },
       { type: 'text', name: 'profilePictureURL', label: 'Profile Picture URL', placeholder: 'Enter URL' },
     ];
@@ -34,6 +34,16 @@
   
   const handleSubmit=async(formData)=>{
       try{
+
+          if(formData.mobileNumber){
+            formData = {...formData,mobileNumber: formData.mobileNumber.toString()}
+          }
+
+          if(formData.salary){
+            formData = {...formData,salary: formData.salary.toString()}
+          }
+
+
           const mutation= `
             mutation UpdateEmployeeProfile($employeeId: ID!, $input: updateEmployeeProfile!) {
                 updateEmployeeProfile(employeeId: $employeeId, input: $input) {

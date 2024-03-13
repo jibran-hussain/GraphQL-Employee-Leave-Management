@@ -16,10 +16,10 @@
     { type: 'text', name: 'name', label: 'Name', placeholder: 'Enter name' },
     { type: 'email', name: 'email', label: 'Email', placeholder: 'Enter email' },
     { type: 'password', name: 'password', label: 'Password', placeholder: 'Enter Password' },
-    { type: 'text', name: 'mobileNumber', label: 'Mobile Number', placeholder: 'Enter Mobile Number' },
+    { type: 'number', name: 'mobileNumber', label: 'Mobile Number', placeholder: 'Enter Mobile Number' },
     { type: 'text', name: 'profilePictureURL', label: 'Profile Picture URL', placeholder: 'Enter URL' },
     { type: 'text', name: 'designation', label: 'Designation', placeholder: 'Enter designation' },
-    { type: 'text', name: 'salary', label: 'Salary', placeholder: 'Enter Salary' },
+    { type: 'number', name: 'salary', label: 'Salary', placeholder: 'Enter Salary' },
   ];
 
   if($user.role === 'admin') formFields.push({ type: 'select', name: 'role', label: 'Role', placeholder: 'Select Role',options:['employee'] });
@@ -32,7 +32,15 @@
 
 const handleSubmit=async(formData)=>{
     try{
-      console.log(formData,'here is the register data')
+      
+      if(formData.mobileNumber){
+            formData = {...formData,mobileNumber: formData.mobileNumber.toString()}
+      }
+
+      if(formData.salary){
+        formData = {...formData,salary: formData.salary.toString()}
+      }
+      
       const {name, email, password, role, designation} = formData;
       if(!name){
           isError=true;
