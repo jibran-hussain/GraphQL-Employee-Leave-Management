@@ -1,4 +1,5 @@
 export const leaveResolver={
+
     getAllLeavesOfAnEmployeeResponse: {
         __resolveType(obj, contextValue, info) {
             if (obj.data) {
@@ -12,6 +13,7 @@ export const leaveResolver={
             return null; // Return null if the type cannot be determined
         }
     },
+
     getSpecificLeaveResponse: {
         __resolveType(obj, contextValue, info){
             if(obj.data){
@@ -22,8 +24,9 @@ export const leaveResolver={
             }
             return null; // GraphQLError is thrown
         },
-        },
-        getAllLeavesInSystemResponse: {
+    },
+
+    getAllLeavesInSystemResponse: {
         __resolveType(obj, context, info) {
             if (obj.data) {
                 return 'getAllLeavesInSystem';
@@ -34,6 +37,7 @@ export const leaveResolver={
             return null; // Return null if the type cannot be determined
         }
     },
+
     getLeavesSummaryResponse: {
         __resolveType(obj, context, info) {
             if (obj.data) {
@@ -45,6 +49,7 @@ export const leaveResolver={
             return null; // Return null if the type cannot be determined
         }
     },
+
     getAllMeLeavesResponse: {
         __resolveType(obj, context, info) {
             if (obj.data) {
@@ -56,6 +61,7 @@ export const leaveResolver={
             return null; // Return null if the type cannot be determined
         }
     },
+
     getSpecificMeLeaveResponse: {
         __resolveType(obj, context, info) {
             if (obj.data) {
@@ -67,7 +73,9 @@ export const leaveResolver={
             return null; // Return null if the type cannot be determined
         }
     },
+    
     Query:{
+
         async getAllLeavesOfLoggedInEmployee(_,args,{dataSources}){
             return dataSources.EmployeeAPI.getAllLeavesOfLoggedInEmployee(args.params);
         },
@@ -79,39 +87,34 @@ export const leaveResolver={
         async getSpecificMeLeave(_,args,{dataSources}){
             return dataSources.EmployeeAPI.getSpecificMeLeave(args.leaveId);
         },
+
         async getSpecificLeaveInSystem(_,args,{dataSources}){
             return dataSources.EmployeeAPI.getSpecificLeaveInSystem(args.leaveId);
         },
+
         async getAllLeavesInSystem(_,args,{dataSources}){
           return dataSources.EmployeeAPI.getAllLeavesInSystem(args.params)
         },
+
         async getSystemLeaveSummary(_,args,{dataSources}){
             return dataSources.EmployeeAPI.getSystemLeaveSummary();
         },
+
         async getEmployeeLeaveSummary(_,args,{dataSources}){
-            try{
-                const response= await dataSources.EmployeeAPI.getEmployeeLeaveSummary(args.employeeId);
-                return response;
-            }catch(error){
-                console.log(error.message);
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.getEmployeeLeaveSummary(args.employeeId)
         }
     },
+
     Mutation:{
+
         async applyLeave(_,args,{dataSources}){
            return await dataSources.EmployeeAPI.applyLeave(args.input);
         },
 
         async deleteLeave(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.deleteLeave(args.leaveId);
-                return response;
-            }catch(error){
-                console.log(error.message)
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.deleteLeave(args.leaveId);
         },
+
         async rejectLeave(_,args,{dataSources}){
             return dataSources.EmployeeAPI.rejectLeave(args.leaveId,args.rejectionReason);
         },

@@ -96,14 +96,14 @@ export const employeeTypeDef = `#graphql
     }
 
     input SignupInput{
-        name: String!
-        email: String!
-        password: String!
-        role: String!
+        name: String
+        email: String
+        password: String
+        role: String
         mobileNumber: String
         profilePicture: String
         salary: String
-        designation: String!
+        designation: String
     }
 
     input listEmployeesQuery{

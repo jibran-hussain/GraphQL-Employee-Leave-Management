@@ -40,17 +40,17 @@
                 body: JSON.stringify({query:mutation}),
                 });
                 let responseBody=await response.json()
-                if(responseBody.data.signin.token){
+
+                if(responseBody.errors){
+                    isError=true;
+                    error=responseBody.errors[0].extensions.response?.body?.error || responseBody.errors[0].extensions.response?.body?.message
+                }else{
                     const token=responseBody.data.signin.token;
                     localStorage.setItem('jwt',`${JSON.stringify(token)}`)
                     const decodedToken=decodeJwtToken(token);
                     user.set(decodedToken)
                     goto('/dashboard')
-            }
-            else{
-                isError=true;
-                error=responseBody.data.signin.error || responseBody.data.signin.message
-            }
+                }
             }
             
         }catch(error){

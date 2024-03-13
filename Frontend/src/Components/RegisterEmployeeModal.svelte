@@ -32,7 +32,6 @@
 
 const handleSubmit=async(formData)=>{
     try{
-      console.log($user)
       console.log(formData,'here is the register data')
       const {name, email, password, role, designation} = formData;
       if(!name){
@@ -64,9 +63,7 @@ const handleSubmit=async(formData)=>{
           error=`Role is mandatory`
           success=false;
           isSuccess=false;
-      }
-
-      if(password && password.length <4){
+      }else if(password && password.length <4){
         isError=true;
           error=`Password should be of minimum 4 characters`
           success=false;
@@ -102,17 +99,17 @@ const handleSubmit=async(formData)=>{
         });
         let responseBody=await response.json()
         // show the error
-        if(responseBody.data?.registerEmployee.message){
+
+        if(responseBody.errors){
+            isError=true;
+            error=responseBody.errors[0].extensions.response?.body?.error || responseBody.errors[0].extensions.response?.body?.message
+            success=false;
+            isSuccess=false;
+        }else{
             isSuccess=true;
             success='Employee registered successfully'
             isError=false
             error=''
-        }
-        else{
-            isError=true;
-            error=responseBody.data?.registerEmployee.error||responseBody.message
-            success=false;
-            isSuccess=false;
         }
       }
         document.querySelector('.modal-content').scrollTop = 0;

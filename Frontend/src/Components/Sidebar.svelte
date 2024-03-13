@@ -34,7 +34,10 @@
                   }),
               });
       let responseBody=await response.json();
-      return responseBody.data.getLoggedInEmployeesDetails;
+
+      if(responseBody.errors) return ''
+      else return responseBody.data.getLoggedInEmployeesDetails;
+      
     }catch(e){
       console.log(e.message)
     }

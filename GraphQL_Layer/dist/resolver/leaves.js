@@ -88,14 +88,7 @@ export const leaveResolver = {
             return dataSources.EmployeeAPI.getSystemLeaveSummary();
         },
         async getEmployeeLeaveSummary(_, args, { dataSources }) {
-            try {
-                const response = await dataSources.EmployeeAPI.getEmployeeLeaveSummary(args.employeeId);
-                return response;
-            }
-            catch (error) {
-                console.log(error.message);
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.getEmployeeLeaveSummary(args.employeeId);
         }
     },
     Mutation: {
@@ -103,14 +96,7 @@ export const leaveResolver = {
             return await dataSources.EmployeeAPI.applyLeave(args.input);
         },
         async deleteLeave(_, args, { dataSources }) {
-            try {
-                const response = await dataSources.EmployeeAPI.deleteLeave(args.leaveId);
-                return response;
-            }
-            catch (error) {
-                console.log(error.message);
-                return error.extensions.response.body;
-            }
+            return dataSources.EmployeeAPI.deleteLeave(args.leaveId);
         },
         async rejectLeave(_, args, { dataSources }) {
             return dataSources.EmployeeAPI.rejectLeave(args.leaveId, args.rejectionReason);

@@ -96,8 +96,10 @@ $:{
                 }),
             });
             let responseBody=await response.json()
-            if(responseBody.data?.listAllEmployees) return responseBody.data.listAllEmployees;
-            else return ''
+
+            if(responseBody.errors) return ''
+            else return responseBody.data.listAllEmployees;
+
         }catch(e){
             console.log(e.message)
         }
@@ -128,10 +130,12 @@ $:{
                     }
                 }),
             });
-            let responseBody=await response.json()
-            console.log(responseBody,'here is the response body')
-            if(responseBody.data?.listAllEmployees) return responseBody.data.listAllEmployees;
-            else return ''
+
+            const responseBody=await response.json()
+
+            if(responseBody.errors) return ''
+            else return responseBody.data.listAllEmployees;
+
         }catch(e){
             console.log(e.message)
         }
@@ -162,8 +166,10 @@ $:{
                 }),
             });
             let responseBody=await response.json()
-            if(responseBody.data?.listAllEmployees?.message) employeesListData='';
-            else employeesListData = responseBody.data?.listAllEmployees;
+
+            if(responseBody.errors) employeesListData=''
+            else employeesListData= responseBody.data.listAllEmployees;
+
         }catch(error){
             console.log(error.message)
         }
@@ -196,8 +202,10 @@ $:{
                 }),
             });
             let responseBody=await response.json()
-            if(responseBody.data?.listAllEmployees?.message) employeesListData='';
-            else employeesListData = responseBody.data?.listAllEmployees;
+
+            if(responseBody.errors) employeesListData=''
+            else employeesListData= responseBody.data.listAllEmployees;
+
         }catch(error){
             console.log(error)
         }
@@ -233,8 +241,10 @@ $:{
             }),
         });
         let responseBody=await response.json()
-        if(responseBody.data?.listAllEmployees?.message) employeesListData='';
-        else employeesListData = responseBody.data?.listAllEmployees;
+
+        if(responseBody.errors) employeesListData=''
+        else employeesListData= responseBody.data.listAllEmployees;
+
     } catch (error) {
         console.log(error);
     }
@@ -361,6 +371,7 @@ const handleActivateEmployee=async(employeeId)=>{
                 if(selectedOption) params.sortBy=selectedOption;
                 if(selectedOption && orderOption) params.order=orderOption;
                 showDeletedEmployees?params.deleted='true':''
+                if(limit) params.limit=limit;
                 params.offset=offset;
 
                 const response = await fetch(`http://localhost:4000/graphql`, {
@@ -379,8 +390,8 @@ const handleActivateEmployee=async(employeeId)=>{
                     });
                 let responseBody=await response.json()
 
-                if(responseBody.data?.listAllEmployees?.message) employeesListData='';
-                else employeesListData = responseBody.data?.listAllEmployees;
+                if(responseBody.errors) employeesListData=''
+                else employeesListData= responseBody.data.listAllEmployees;
                 }
         }catch(error){
             console.log( e.message)

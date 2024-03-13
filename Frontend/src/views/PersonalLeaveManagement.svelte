@@ -118,7 +118,9 @@
                 }),
             });
             let responseBody=await response.json()
-            leaveTypesSummary=responseBody.data.getMeLeavesSummary;
+            
+            if(responseBody.errors) leaveTypesSummary = null
+            else leaveTypesSummary=responseBody.data.getMeLeavesSummary;
 
         }catch(error){
             console.log(error.message)

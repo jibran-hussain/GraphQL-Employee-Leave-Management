@@ -46,7 +46,10 @@
                         }),
                     });
             let responseBody=await response.json();
-            loggedInEmployee=responseBody.data.getLoggedInEmployeesDetails.data;
+
+            if(responseBody.errors) loggedInEmployee= null;
+            else loggedInEmployee=responseBody.data.getLoggedInEmployeesDetails.data;
+            
         }catch(error){
             console.log(error.message)
         }
