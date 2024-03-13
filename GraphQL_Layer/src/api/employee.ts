@@ -62,8 +62,10 @@ class EmployeeAPI extends RESTDataSource{
         return this.post('me/leaves',{body:input})
     }
 
-    async getAllLeavesOfLoggedInEmployee(){
-        return this.get('me/leaves')
+    async getAllLeavesOfLoggedInEmployee(params){
+        return this.get('me/leaves',{
+            params
+        })
     }
 
     async getSpecificMeLeave(leaveId){

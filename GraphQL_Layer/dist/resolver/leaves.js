@@ -70,7 +70,7 @@ export const leaveResolver = {
     },
     Query: {
         async getAllLeavesOfLoggedInEmployee(_, args, { dataSources }) {
-            return dataSources.EmployeeAPI.getAllLeavesOfLoggedInEmployee();
+            return dataSources.EmployeeAPI.getAllLeavesOfLoggedInEmployee(args.params);
         },
         async getAllLeavesOfAnEmployee(_, args, { dataSources }) {
             return dataSources.EmployeeAPI.getAllLeavesOfAnEmployee(args.employeeId, args.params);
