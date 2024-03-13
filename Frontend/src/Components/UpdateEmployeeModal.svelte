@@ -76,7 +76,7 @@
           
           if(responseBody.errors){
               isError=true;
-              error=responseBody.errors[0].extensions.response.body.message||responseBody.errors[0].extensions.response.body.error;
+              error=responseBody.errors[0].extensions.response.body.error||responseBody.errors[0].extensions.response.body.message;
               success=false;
               isSuccess=false;
           }

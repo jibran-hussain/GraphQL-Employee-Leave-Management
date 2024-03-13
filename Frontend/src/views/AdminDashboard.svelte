@@ -282,7 +282,7 @@ const handleDeleteEmployee=async(employeeId)=>{
 
             
             if(responseBody.errors){
-                toast.error('You are not authorized to delete this employee',{
+                toast.error(responseBody.errors[0].extensions.response.body.error,{
                     duration:3000
                 });   
             }
@@ -337,7 +337,7 @@ const handleActivateEmployee=async(employeeId)=>{
             let responseBody=await response.json()
 
             if(responseBody.errors){
-                toast.error('You are not authorized to activate this employee',{
+                toast.error(responseBody.errors[0].extensions.response.body.error,{
                     duration:3000
                 });   
             }

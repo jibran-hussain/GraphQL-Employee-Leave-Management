@@ -64,7 +64,7 @@
 
           if(responseBody.errors){
               isError=true;
-              error=data.error||data.message;
+              error=responseBody.errors[0].extensions.response.body.error||responseBody.errors[0].extensions.response.body.message;
               success=false;
               isSuccess=false;
           }else{
