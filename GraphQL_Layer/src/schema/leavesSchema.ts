@@ -1,29 +1,15 @@
 export const leaveTypeDef=`#graphql
 
-type LeaveMetaData{
-    totalLeaveApplications: Int
-    totalLeaveDays: Int
-    page: Int
-    totalPages: Int
-}
+    type LeaveMetaData{
+        totalApplications: Int
+        totalLeaveDays: Int
+        currentPage: Int
+        totalPages: Int
+    }
 
-
-type ListAllSystemLeavesMetadata{
-    totalApplications: Int
-    totalLeaveDays: Int
-    currentPage: Int
-    totalPages: Int
-}
-
-type ListEmployeeLeavesMetadata{
-    timesApplied: Int
-    totalLeaveDays: Int
-    currentPage: Int
-    totalPages: Int
-}
-type getAllMeLeaves{
-        data:[Leave]
-        metadata: LeaveMetaData
+    type getAllMeLeaves{
+            data:[Leave]
+            metadata: LeaveMetaData
     }
 
     type LeavesWithEmployeeInformation{
@@ -39,7 +25,7 @@ type getAllMeLeaves{
 
     type getAllLeavesOfAnEmployee{
         data: [LeavesWithEmployeeInformation]
-        metadata: ListEmployeeLeavesMetadata
+        metadata: LeaveMetaData
     }
 
     type getSpecificLeave{
@@ -48,7 +34,7 @@ type getAllMeLeaves{
 
     type getAllLeavesInSystem{
         data: [LeavesWithEmployeeInformation]
-        metadata: ListAllSystemLeavesMetadata
+        metadata: LeaveMetaData
     }
 
     type leavesSummary{

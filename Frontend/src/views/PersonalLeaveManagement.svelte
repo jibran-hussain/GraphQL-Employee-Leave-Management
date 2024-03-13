@@ -17,7 +17,7 @@
     let leaveIdToFetch;
     let leaveToUpdate;
     let searchInput='';
-    let limit=1;
+    let limit=10;
 
     $:{
         if(limit){
@@ -49,9 +49,9 @@
                             employeeId
                         }
                         metadata {
-                            totalLeaveApplications
+                            totalApplications
                             totalLeaveDays
-                            page
+                            currentPage
                             totalPages
                         }
                     }
@@ -194,9 +194,9 @@
                             employeeId
                         }
                         metadata {
-                            totalLeaveApplications
+                            totalApplications
                             totalLeaveDays
-                            page
+                            currentPage
                             totalPages
                         }
                     }
@@ -281,8 +281,8 @@
         <div>
           <LimitDropdown {limit} on:limitChange={(event)=>limit=event.detail.limit}  />
         </div>
-        <div><Pagination totalPages={leaves.metadata.totalPages} currentPage={leaves.metadata.page} onPageChange={handlePageChange} /></div>
-        <div>{(leaves.metadata.page-1)*limit+1} - {(leaves.metadata.page-1)*limit+1 + (leaves.data.length -1)} of {leaves.metadata.totalLeaveApplications}</div>
+        <div><Pagination totalPages={leaves.metadata.totalPages} currentPage={leaves.metadata.currentPage} onPageChange={handlePageChange} /></div>
+        <div>{(leaves.metadata.currentPage-1)*limit+1} - {(leaves.metadata.currentPage-1)*limit+1 + (leaves.data.length -1)} of {leaves.metadata.totalApplications}</div>
       </div>
     
 {:else}

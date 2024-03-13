@@ -110,11 +110,11 @@ export const listAllEmployeeLeaves=async (req,res)=>{
 
             if(offset > totalPages) return res.status(404).json({error:`This page does not exist`})
 
-            const {totalLeaveDays,timesApplied}=await getTotalLeaveDays(employeeId)
+            const {totalLeaveDays}=await getTotalLeaveDays(employeeId)
             
             return res.json({data:allLeaves,metadata:{
                 totalLeaveDays:totalLeaveDays,
-                timesApplied:count,
+                totalApplications:count,
                 currentPage:offset,
                 totalPages
             }})
@@ -437,9 +437,9 @@ export const listLeaves=async(req,res)=>{
 
             
             return res.json({data:allLeaves,metadata:{
-                totalLeaveApplications:count,
+                totalApplications:count,
                 totalLeaveDays,
-                page:offset,
+                currentPage:offset,
                 totalPages
             }})
         }

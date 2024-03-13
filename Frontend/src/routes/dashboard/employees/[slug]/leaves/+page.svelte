@@ -49,7 +49,7 @@
                             currentPage
                             totalPages
                             totalLeaveDays
-                            timesApplied
+                            totalApplications
                         }
                     }
                     ... on errorMessage {
@@ -158,7 +158,7 @@
                             currentPage
                             totalPages
                             totalLeaveDays
-                            timesApplied
+                            totalApplications
                         }
                     }
                     ... on errorMessage {
@@ -318,7 +318,7 @@
           <LimitDropdown {limit} on:limitChange={(event)=>limit=event.detail.limit}  />
         </div>
         <div><Pagination totalPages={leaves.metadata.totalPages} currentPage={leaves.metadata.currentPage} onPageChange={handlePageChange} /></div>
-        <div>{(leaves.metadata.currentPage-1)*limit+1} - {(leaves.metadata.currentPage-1)*limit+1 + (leaves.data.length -1)} of {leaves.metadata.timesApplied}</div>
+        <div>{(leaves.metadata.currentPage-1)*limit+1} - {(leaves.metadata.currentPage-1)*limit+1 + (leaves.data.length -1)} of {leaves.metadata.totalApplications}</div>
       </div>
 {:else}
 <h4 class="text-center" style="margin-top:15%; color:#B4B4B8">No such leaves in the system</h4>

@@ -1371,13 +1371,13 @@ paths:
                   metadata:
                     type: object
                     properties:
-                      totalLeaveApplications:
+                      totalApplications:
                         type: integer
                         description: Total number of leave applications
                       totalLeaveDays:
                         type: integer
                         description: Total number of leave days for the employee
-                      page:
+                      currentPage:
                         type: integer
                         description: Current page number
                       totalPages:
@@ -1430,9 +1430,9 @@ paths:
                         createdAt: "2024-02-22T11:44:51.872Z"
                         updatedAt: "2024-02-22T11:44:51.872Z"
                     metadata:
-                      totalLeaveApplications: 6
+                      totalApplications: 6
                       totalLeaveDays: 1
-                      page: 1
+                      currentPage: 1
                       totalPages: 1          
         '400':
           description: Bad request due to invalid parameters
@@ -1949,7 +1949,7 @@ paths:
                       totalLeaveDays:
                         type: integer
                         description: Total number of leave days taken by the employee
-                      timesApplied:
+                      totalApplications:
                         type: integer
                         description: Total number of times the employee has applied for leave
                       currentPage:
@@ -2039,7 +2039,7 @@ paths:
                       designation: Software Engineer
                 metadata:
                   totalLeaveDays: 1
-                  timesApplied: 4
+                  totalApplications: 4
                   currentPage: 1
                   totalPages: 1
         '400':
