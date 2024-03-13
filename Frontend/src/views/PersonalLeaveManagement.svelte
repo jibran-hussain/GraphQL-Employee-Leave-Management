@@ -17,7 +17,7 @@
     let leaveIdToFetch;
     let leaveToUpdate;
     let searchInput='';
-    let limit=10;
+    let limit=1;
 
     $:{
         if(limit){
@@ -29,18 +29,58 @@
 
     const fetchLeaves=async()=>{
         try{
-            let url=`http://localhost:3000/api/v1/me/leaves?limit=${limit}&status=${leaveStatus}&search=${searchInput}`;
-            const response=await fetch(url,{
-                method:'GET',
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
+            const params={}
+
+            if(limit) params.limit=limit;
+            if(leaveStatus) params.status=leaveStatus;
+            if(searchInput) params.search= searchInput;
+
+            const query = `query GetAllLeavesOfLoggedInEmployee($params: listAllLeavesOfAnEmployee) {
+                getAllLeavesOfLoggedInEmployee(params: $params) {
+                    ... on getAllMeLeaves {
+                        data {
+                            id
+                            reason
+                            dates
+                            status
+                            rejectionReason
+                            createdAt
+                            updatedAt
+                            employeeId
+                        }
+                        metadata {
+                            totalLeaveApplications
+                            totalLeaveDays
+                            page
+                            totalPages
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
                 }
-            });
-            if(response.ok){
-                let data=await response.json();
-                leaves=data;
+            }`
+
+            const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query,
+            variables:{
+                params
             }
-            else leaves=undefined;
+                }),
+            });
+            let responseBody=await response.json()
+
+            if(responseBody.errors) leaves = undefined;
+            else{
+                leaves = responseBody.data.getAllLeavesOfLoggedInEmployee
+            }
         }catch(error){
             console.log(error.message)
         }
@@ -140,23 +180,64 @@
 
     const handlePageChange=async(offset)=>{
     try{
-      if(offset > leaves.metadata.totalPages){
+        const query = `query GetAllLeavesOfLoggedInEmployee($params: listAllLeavesOfAnEmployee) {
+                getAllLeavesOfLoggedInEmployee(params: $params) {
+                    ... on getAllMeLeaves {
+                        data {
+                            id
+                            reason
+                            dates
+                            status
+                            rejectionReason
+                            createdAt
+                            updatedAt
+                            employeeId
+                        }
+                        metadata {
+                            totalLeaveApplications
+                            totalLeaveDays
+                            page
+                            totalPages
+                        }
+                    }
+                    ... on errorMessage {
+                        error
+                    }
+                }
+            }`
+
+        if(offset > leaves.metadata.totalPages ){
         toast.error('This page number does not exist.',{
                     duration:3000
                 });
       }else{
-        const response=await fetch(`http://localhost:3000/api/v1/me/leaves/${leaveId}&offset=${offset}&limit=${limit}&search=${searchInput}`,{
-                method:'GET',
-                headers:{
-                    Authorization:`Bearer ${$user.token}`
-                }
-            });
-      const data= await response.json();
-      if(response.ok){
-            leaves= data;
+
+        const params={}
+
+        if(limit) params.limit=limit;
+        if(offset) params.offset=offset;
+        if(leaveStatus) params.status=leaveStatus;
+        if(searchInput) params.search= searchInput;
+
+        const response = await fetch(`http://localhost:4000/graphql`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization':`Bearer ${$user.token}`
+            },
+            body: JSON.stringify({
+            query,
+            variables:{
+                params
             }
-            else return undefined;
-      }
+                }),
+            });
+            let responseBody=await response.json()
+
+            if(responseBody.errors) leaves = undefined;
+            else leaves = responseBody.data.getAllLeavesOfLoggedInEmployee;
+        }
     }catch(error){
         console.log(error.message)
     }
