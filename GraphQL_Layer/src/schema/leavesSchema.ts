@@ -91,7 +91,7 @@ type getAllMeLeaves{
     type Query{
         getAllLeavesInSystem(params: listAllLeavesInSystem): getAllLeavesInSystemResponse
         getAllLeavesOfAnEmployee(employeeId: ID!,params:listAllLeavesOfAnEmployee): getAllLeavesOfAnEmployeeResponse
-        getAllLeavesOfLoggedInEmployee: getAllMeLeavesResponse
+        getAllLeavesOfLoggedInEmployee(params: listAllLeavesOfAnEmployee): getAllMeLeavesResponse
         getSpecificLeaveInSystem(leaveId: ID!): getSpecificLeaveResponse
         getSpecificMeLeave(leaveId: ID!):getSpecificMeLeaveResponse
         getSystemLeaveSummary: getLeavesSummaryResponse
