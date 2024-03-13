@@ -121,7 +121,7 @@ export const employeeTypeDef = `#graphql
         role: String
         designation: String
         password: String
-        salary: Float
+        salary: String
         profilePictureURL: String
     }
 
