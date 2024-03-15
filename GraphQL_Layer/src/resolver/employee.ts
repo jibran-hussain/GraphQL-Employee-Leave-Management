@@ -60,44 +60,19 @@ export const employeResolver={
     Query:{
 
         async listAllEmployees(_,args,{dataSources}){
-            try{
-                const response = await dataSources.EmployeeAPI.listAllEmployees(args.input);
-                return response;
-            }catch(error){
-                console.log(error.message)
-                return error.extensions.response.body;
-            }
+           return dataSources.EmployeeAPI.listAllEmployees(args.input);
         },
 
         async getLoggedInEmployeesDetails(_,args,{dataSources}){
-            try {
-                const response = await dataSources.EmployeeAPI.getLoggedInEmployeesDetails();
-                console.log(response)
-                return response;
-            } catch (error) {
-                console.error(error.message);
-                throw new Error('Internal server error');
-            }
+            return dataSources.EmployeeAPI.getLoggedInEmployeesDetails();
         },
 
         async getEmployeeDetails(_,args,{dataSources}){
-            try {
-                const response = await dataSources.EmployeeAPI.getEmployeeDetails(args.employeeId);
-                return response;
-            } catch (error) {
-                console.error(error.message);
-                return error.extensions.response.body;
-            }
+           return dataSources.EmployeeAPI.getEmployeeDetails(args.employeeId);
         },
 
         async getMeLeavesSummary(_,args,{dataSources}){
-            try{
-                const response= await dataSources.EmployeeAPI.getMeLeavesSummary();
-                return response;
-            }catch(error){
-                console.log(error.message)
-                return error.extensions.response.body
-            }
+            return dataSources.EmployeeAPI.getMeLeavesSummary();
         }
 
 
@@ -106,25 +81,11 @@ export const employeResolver={
     Mutation:{
                 
         async registerEmployee(_,args,{dataSources}){
-            try {
-                const response = await dataSources.EmployeeAPI.registerEmployee(args.input);
-                console.log(response,'here is the signup response')
-                return response;
-            } catch (error) {
-                console.error(error);
-                return error.extensions.response.body
-            }
+            return dataSources.EmployeeAPI.registerEmployee(args.input);
         },
 
         async signin(_,args,{dataSources}){
-            try {
-                const response = await dataSources.EmployeeAPI.signin(args.input);
-                return response;
-            } catch (error) {
-                console.error(error);
-                return error.extensions.response.body
-            }
-
+            return dataSources.EmployeeAPI.signin(args.input);
         },
         async deleteEmployee(_,args,{dataSources}){
            return dataSources.EmployeeAPI.deleteEmployee(args.employeeId);
