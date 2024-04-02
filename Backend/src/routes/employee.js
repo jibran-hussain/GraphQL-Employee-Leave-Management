@@ -1,5 +1,5 @@
 import express from 'express'
-import {deleteEmployee,listAllEmployees,activateAccount,getLoggedUsersDetails,updateProfile,getEmployeeDetails,updateEmployeeProfile,updatedProfileByPutMethod,updateEmployeeProfileByPut,resetPassword, deleteMe} from '../controllers/employee.js'
+import {deleteEmployee,listAllEmployees,activateAccount,getLoggedUsersDetails,updateProfile,getEmployeeDetails,updateEmployeeProfile,updatedProfileByPutMethod,updateEmployeeProfileByPut,resetPassword, deleteMe,manageMfaSettings,verifyOTP,getMfaDetails} from '../controllers/employee.js'
 import { isAuth } from '../middlewares/isAuth.js';
 import { isAdminOrSuperadmin } from '../middlewares/isAdminOrSuperadmin.js';
 const router=express.Router();
@@ -28,6 +28,23 @@ router.put('/me',isAuth,updatedProfileByPutMethod);
 router.delete('/me',isAuth,deleteMe);
 
 router.patch('/me/password',isAuth,resetPassword)
+
+// Routes related to Multifactor Authentication
+
+
+// Manages the MFA options availabe
+router.patch('/mfa-settings',isAuth,manageMfaSettings)
+
+
+//Verify OTP
+router.post('/verify-otp',verifyOTP);
+
+//Get enabled MFA options
+router.get('/mfa-details',getMfaDetails);
+
+
+
+
 
 
 
