@@ -100,6 +100,11 @@
          My Profile
       </a>
     </li>
+    <li class="nav-item">
+      <a href="#" on:click={() => goto('/dashboard/me/mfa-settings')} class="nav-link">
+         MFA Settings
+      </a>
+    </li>
   </ul>
 </nav>
 
