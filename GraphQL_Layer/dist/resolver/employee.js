@@ -1,8 +1,11 @@
 export const employeResolver = {
     SigninResponse: {
         __resolveType(obj, contextValue, info) {
+            if (obj.message && obj.employeeId) {
+                return 'mfaEnabledSigninSuccess';
+            }
             if (obj.token) {
-                return 'SigninSuccess';
+                return 'mfaDisabledSigninSuccess';
             }
             if (obj.error) {
                 return 'errorMessage';

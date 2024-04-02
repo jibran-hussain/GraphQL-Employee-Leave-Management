@@ -1,6 +1,11 @@
 export const employeeTypeDef = `#graphql
 
-    type SigninSuccess{
+    type mfaEnabledSigninSuccess{
+        message: String,
+        employeeId: ID
+    }
+
+    type mfaDisabledSigninSuccess{
         token: String
     }
 
@@ -34,7 +39,7 @@ export const employeeTypeDef = `#graphql
 
     
 
-    union SigninResponse= SigninSuccess | errorMessage
+    union SigninResponse= mfaEnabledSigninSuccess | mfaDisabledSigninSuccess | errorMessage
     union successOrErrorResponse = successMessage | errorMessage
     union listAllEmployeesResponse= listAllEmployees | errorMessage
     union getLoggedInEmployeesDetailsResponse = getLoggedInEmployeesDetails | errorMessage
