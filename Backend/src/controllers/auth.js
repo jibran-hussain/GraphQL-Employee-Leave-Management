@@ -1,9 +1,11 @@
 import { isValidEmail,passwordValidation } from "../utils/Validation/validations.js";
 import { generateHashedPassword } from '../utils/Auth/generateHashedPassword.js';
-import { generateAuthToken } from '../utils/Auth/geneateAuthToken.js';
 import { isValidPassword } from '../utils/Validation/isValidPassword.js'
 import { isValidNumber } from '../utils/Validation/isValidMobile.js';
 import Employee from '../models/employee.js';
+import genereateTotp from "../utils/OTP/generateTotp.js";
+import sendEmail from "../utils/email/sendEmail.js";
+import { generateAuthToken } from "../utils/Auth/geneateAuthToken.js";
 
 // Creates an admin/employee wiht name,email,password,role,mobileNumber and salary as mandatory fileds.
 // Admin can only be created by Superadmin.
@@ -87,13 +89,23 @@ export const userSignin=async(req,res)=>{
         if(!employee) return res.status(401).json({error:`Invalid credentials`});
 
         if(isValidPassword(password,employee.hashedPassword)){
-            const token=generateAuthToken(employee.id,employee.email,employee.role)
+            if(employee.mfaEnabled){
+                const otp = genereateTotp();
+                sendEmail('"Jibran" <jibran@mir.com>',`${email}`,'OTP verification',`The OTP for signin is ${otp}. It will expire in 30 seconds`,`The OTP for signin is ${otp}. It will expire in 30 seconds`)
+                console.log(`Your OTP is ${otp}`)
+                return res.json({message: 'OTP has been sent to your registered email address',employeeId:employee.id});
+            }
+            else{
+                const token=generateAuthToken(employee.id,employee.email,employee.role)
                  return res.json({
                          token
                     })
+            }
+           
         }else return res.status(401).json({error:`Invalid credentials`})
     }catch(e){
-       return res.status(500).json({error:`Internal Server Error`})
+        console.log(e,'yerror')
+       return res.status(500).json({error:e.message})
     }
 }
 
