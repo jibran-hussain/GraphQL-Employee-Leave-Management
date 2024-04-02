@@ -4,6 +4,7 @@
     import Form from '../Components/Form.svelte';
     import {decodeJwtToken} from '../utils/decodeJwtToken.js'
     import {user} from '../stores/userStore.js'
+    import {preAuthEmployeeId} from '../stores/preAuthEmployeeId.js'
 
     const formFields=[
                {type:'text',name:'email',label:'Email',placeholder:'Enter email'},
@@ -12,6 +13,25 @@
 
     let error=''
     let isError=false;
+
+    const getMfaDetails = async(employeeId)=>{
+        try{
+            const response = await fetch(`http://localhost:3000/api/v1/mfa-details?employeeId=${employeeId}`, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                }
+            });
+                const responseBody=await response.json();
+                console.log(responseBody,'check')
+                return responseBody;
+                
+        }catch(error){
+            console.log(error.message)
+        }
+    }
+
     const handleSubmit=async(formData)=>{
         try{
             const {email,password}=formData
@@ -22,7 +42,11 @@
                 const mutation= `
                 mutation Signin {
                     signin(input: { email: "${formData.email}", password: "${formData.password}" }) {
-                        ... on SigninSuccess {
+                        ... on mfaEnabledSigninSuccess {
+                            message
+                            employeeId
+                        }
+                        ... on mfaDisabledSigninSuccess {
                             token
                         }
                         ... on errorMessage {
@@ -45,11 +69,22 @@
                     isError=true;
                     error=responseBody.errors[0].extensions.response?.body?.error || responseBody.errors[0].extensions.response?.body?.message
                 }else{
-                    const token=responseBody.data.signin.token;
-                    localStorage.setItem('jwt',`${JSON.stringify(token)}`)
-                    const decodedToken=decodeJwtToken(token);
-                    user.set(decodedToken)
-                    goto('/dashboard')
+                    if(responseBody.data.signin.token){
+                        // if Multifactor Authentication is not enabled
+                        const token=responseBody.data.signin.token;
+                        localStorage.setItem('jwt',`${JSON.stringify(token)}`)
+                        const decodedToken=decodeJwtToken(token);
+                        user.set(decodedToken)
+                        goto('/dashboard')
+                    }
+                    else if(responseBody.data.signin.message){
+                        // If Multifactor Authentication is enabled
+                        const employeeId = responseBody.data.signin.employeeId
+                        preAuthEmployeeId.set(employeeId)
+                        const {enabledMfaOptions} = await getMfaDetails(employeeId);
+                        if(enabledMfaOptions.length > 1)  goto(`/mfa-options`);
+                        else if(enabledMfaOptions.length === 1 && enabledMfaOptions[0] === 'emailOtp') goto(`/verify-otp`)
+                    }
                 }
             }
             
