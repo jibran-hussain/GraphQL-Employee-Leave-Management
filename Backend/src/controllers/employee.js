@@ -3,10 +3,12 @@ import Leave from '../models/leaves.js';
 import { Op } from 'sequelize';
 import 'dotenv/config'
 import bcrypt from 'bcrypt';
+import verifyTotp from '../utils/OTP/verifyTotp.js';
 import { generateHashedPassword } from '../utils/Auth/generateHashedPassword.js';
 import { isValidNumber } from '../utils/Validation/isValidMobile.js';
 import {passwordValidation} from '../utils/Validation/validations.js'
 import sequelize from '../../index.js';
+import {generateAuthToken} from '../utils/Auth/geneateAuthToken.js'
 
 
 // This method gives the list of all active and deactivated employees.
@@ -442,5 +444,119 @@ export const resetPassword=async(req,res)=>{
     }catch(e){
         console.log(e)
         return res.status(500).json({error:`Internal server error`})
+    }
+}
+
+
+export const manageMfaSettings= async(req,res)=>{
+    try{
+        const employeeId = req.auth.id;
+
+        const employee = await Employee.findByPk(employeeId);
+
+        const {enableMfa,emailOtp,smsOtp,totp} = req.body;
+
+        if(enableMfa){
+
+            const updatedMfaOptions={...employee.mfaSettings};
+
+            emailOtp?updatedMfaOptions.emailOtp = true:updatedMfaOptions.emailOtp = false;
+            smsOtp?updatedMfaOptions.smsOtp = true:updatedMfaOptions.smsOtp = false;
+            totp?updatedMfaOptions.totp = true:updatedMfaOptions.totp = false;
+
+
+            const defaultMfaOption = process.env.DEFAULT_MFA_OPTION;
+
+            const isAllDisabled = Object.values(updatedMfaOptions).every(mfaOptions=> mfaOptions === false)
+
+            if(isAllDisabled) updatedMfaOptions[defaultMfaOption] = true;
+
+            await Employee.update({mfaEnabled:true, mfaSettings: {...employee.mfaSettings,...updatedMfaOptions}},{
+                where:{
+                    id: employeeId
+                }   
+            })
+
+        }else{
+            await Employee.update({mfaEnabled:false,mfaSettings: {...employee.mfaSettings,emailOtp:false, smsOtp:false, totp:false}},{
+                where:{
+                    id: employeeId
+                }
+            })
+        }
+
+        return res.json({message:"Changes saved successfully"})
+        
+    }catch(error){
+        console.log(error.message)
+    }
+}
+
+
+export const sendEmail=async (req,res)=>{
+    try{
+        const info = await transporter.sendMail({
+            from: '"Jibran" <jibrna@ethereal.email>', // sender address
+            to: "bar@example.com, baz@example.com", // list of receivers
+            subject: "Hello ✔", // Subject line
+            text: "Hello world?", // plain text body
+            html: "<b>Hello world?</b>", // html body
+          });
+
+          console.log("Message sent:", info.messageId);
+
+          return res.json({info})
+
+    }catch(error){
+        console.log(error.message)
+    }
+}
+
+export const verifyOTP=async(req,res)=>{
+    try{
+        const employeeId = Number(req.query.employeeId);
+        const employee = await Employee.findByPk(employeeId);
+
+        if(!employee) return res.status(404).json({error: `Employee with this id does not exist`});
+
+        const {token} = req.body;
+        const isValidOTP = verifyTotp(token);
+
+        if(isValidOTP){
+            const jwtToken=generateAuthToken(employee.id,employee.email,employee.role)
+            return res.json({ jwtToken })
+        }
+        return res.json({error: `Plese enter the correct OTP`});
+    }catch(error){
+        console.log(error.message)
+    }
+}
+
+export const getMfaDetails=async(req,res)=>{
+    try{
+        const employeeId = Number(req.query.employeeId);
+
+        console.log(employeeId,'bro')
+        
+        const employee = await Employee.findByPk(employeeId);
+
+        if(employee.mfaEnabled){
+            const enabledMfaOptions = [];
+
+            Object.keys(employee.mfaSettings).forEach(mfaOption => {
+                if(employee.mfaSettings[mfaOption]) enabledMfaOptions.push(mfaOption)
+            })
+
+            return res.json({isMfaEnabled:true,enabledMfaOptions})
+
+        }else{
+            return res.json({isMfaEnabled:false})
+        }
+
+
+
+
+    }catch(error){
+        console.log(error.message)
     }
 }
