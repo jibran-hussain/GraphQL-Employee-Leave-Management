@@ -42,6 +42,18 @@ const Employee= sequelize.define('Employee',{
         leavesLeft:{
             type:DataTypes.INTEGER,
             defaultValue:20
+        },
+        mfaEnabled:{
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        mfaSettings:{
+            type: DataTypes.JSONB,
+            defaultValue:{
+                emailOtp:false,
+                smsOtp: false,
+                totp: false
+            }
         }
     },{
         paranoid:true
