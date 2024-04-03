@@ -9,6 +9,10 @@ import { isValidNumber } from '../utils/Validation/isValidMobile.js';
 import {passwordValidation} from '../utils/Validation/validations.js'
 import sequelize from '../../index.js';
 import {generateAuthToken} from '../utils/Auth/geneateAuthToken.js'
+import Otp from '../models/otp.js';
+import { generateEmailOtp } from '../utils/OTP/generateOtp.js';
+import { emailOtpConfig,smsOtpConfig } from '../config/otp.js';
+import sendEmail from '../utils/email/sendEmail.js';
 
 
 // This method gives the list of all active and deactivated employees.
@@ -456,28 +460,35 @@ export const manageMfaSettings= async(req,res)=>{
 
         const {enableMfa,emailOtp,smsOtp,totp} = req.body;
 
+        // Update MFA settings based on enableMfa flag
         if(enableMfa){
 
+            // Clone the existing MFA settings
             const updatedMfaOptions={...employee.mfaSettings};
 
+            // Update individual MFA options based on request body
             emailOtp?updatedMfaOptions.emailOtp = true:updatedMfaOptions.emailOtp = false;
+
             smsOtp?updatedMfaOptions.smsOtp = true:updatedMfaOptions.smsOtp = false;
+
             totp?updatedMfaOptions.totp = true:updatedMfaOptions.totp = false;
 
-
+            // Determine the default MFA option from environment variables
             const defaultMfaOption = process.env.DEFAULT_MFA_OPTION;
 
             const isAllDisabled = Object.values(updatedMfaOptions).every(mfaOptions=> mfaOptions === false)
 
+            // If all MFA options are disabled, enable the default MFA option
             if(isAllDisabled) updatedMfaOptions[defaultMfaOption] = true;
 
+            // Update employee's MFA settings in the database
             await Employee.update({mfaEnabled:true, mfaSettings: {...employee.mfaSettings,...updatedMfaOptions}},{
                 where:{
                     id: employeeId
                 }   
             })
-
         }else{
+            // Disable MFA for the employee and reset all MFA options
             await Employee.update({mfaEnabled:false,mfaSettings: {...employee.mfaSettings,emailOtp:false, smsOtp:false, totp:false}},{
                 where:{
                     id: employeeId
@@ -488,27 +499,46 @@ export const manageMfaSettings= async(req,res)=>{
         return res.json({message:"Changes saved successfully"})
         
     }catch(error){
-        console.log(error.message)
+        console.error("Error in manageMfaSettings:", error);
+        return res.status(500).json({error:error.message});
     }
 }
 
-
-export const sendEmail=async (req,res)=>{
+export const sendOTP = async(req,res)=>{
     try{
-        const info = await transporter.sendMail({
-            from: '"Jibran" <jibrna@ethereal.email>', // sender address
-            to: "bar@example.com, baz@example.com", // list of receivers
-            subject: "Hello ✔", // Subject line
-            text: "Hello world?", // plain text body
-            html: "<b>Hello world?</b>", // html body
-          });
+        const employeeId = Number(req.query.employeeId);
+        const employee = await Employee.findByPk(employeeId)
 
-          console.log("Message sent:", info.messageId);
+        if(!employee) return res.status(404).json({error: `Employee with this id does not exist`});
 
-          return res.json({info})
+        const {emailOtp,smsOtp} = req.body;
+
+        if(emailOtp){
+            const otp = generateEmailOtp();
+            const emailOtpExpiry = new Date(Date.now() + emailOtpConfig.expiryTime);
+
+            const isOtpExisting = await Otp.findByPk(employee.id);
+            
+            if(isOtpExisting){
+                await Otp.update({emailOtp:otp,emailOtpExpiry },{
+                    where:{
+                        employeeId:employee.id
+                    }
+                });
+            }else{
+                await Otp.create({employeeId:employee.id,emailOtp:otp,emailOtpExpiry });
+            } 
+
+            
+            sendEmail('"Jibran" <jibran@mir.com>',`${employee.email}`,'OTP verification',`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`,`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`)
+            return res.json({message: 'OTP has been sent to your registered email address',employeeId:employee.id});
+        }else{
+
+        }
 
     }catch(error){
-        console.log(error.message)
+        console.log(error)
+        return res.status(500).json({error: error.message})
     }
 }
 
@@ -520,27 +550,42 @@ export const verifyOTP=async(req,res)=>{
         if(!employee) return res.status(404).json({error: `Employee with this id does not exist`});
 
         const {token} = req.body;
-        const isValidOTP = verifyTotp(token);
 
-        if(isValidOTP){
+        // Verifying the otp
+        const otpDetailsOfEmployee = await Otp.findByPk(employeeId);
+
+        // If no OTP is registered against the employee
+        if(!otpDetailsOfEmployee) return res.status(400).json({error: 'Incorrect OTP'})
+
+        const currentDate = new Date(Date.now());
+        
+        if(otpDetailsOfEmployee.emailOtp === token && currentDate < otpDetailsOfEmployee.emailOtpExpiry){
             const jwtToken=generateAuthToken(employee.id,employee.email,employee.role)
             return res.json({ jwtToken })
         }
-        return res.json({error: `Plese enter the correct OTP`});
+
+        return res.status(400).json({error: `Incorrect OTP`});
     }catch(error){
         console.log(error.message)
     }
 }
 
-export const getMfaDetails=async(req,res)=>{
+export const getMfaDetailsofUser=async(req,res)=>{
     try{
         const employeeId = Number(req.query.employeeId);
 
-        console.log(employeeId,'bro')
-        
+        // Check if employeeId is valid or not
+        if(isNaN(employeeId)) return res.status(400).json({error:`Please enter a valid employee id`})
+
         const employee = await Employee.findByPk(employeeId);
 
+        // If employee is not found
+        if(!employee) return res.status(404).json({error:`Employee with this id not found`})
+
         if(employee.mfaEnabled){
+
+            // If MFA (Multi-Factor Authentication) is enabled for the employee
+
             const enabledMfaOptions = [];
 
             Object.keys(employee.mfaSettings).forEach(mfaOption => {
@@ -549,14 +594,14 @@ export const getMfaDetails=async(req,res)=>{
 
             return res.json({isMfaEnabled:true,enabledMfaOptions})
 
-        }else{
-            return res.json({isMfaEnabled:false})
         }
-
-
-
+        
+        // If MFA is not enabled for the employee
+        return res.json({isMfaEnabled:false})
 
     }catch(error){
-        console.log(error.message)
+        console.log(`Error in getMfaDetails`,error)
+        return res.status(500).json({error:error.message});
     }
 }
+
