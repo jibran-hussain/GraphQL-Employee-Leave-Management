@@ -116,7 +116,7 @@
         <div class="form-check form-switch mb-3">
           <input class="form-check-input" type="checkbox" role="switch" id="mfaSwitch" bind:checked={isMfaEnabled} on:click={toggleMfa}>
           <label class="form-check-label fw-bold text-primary" for="mfaSwitch">
-            {isMfaEnabled ? 'MFA Enabled' : 'MFA Disabled'}
+            Secure your account by enabling Multi-Factor Authentication
           </label>
         </div>
   
@@ -124,21 +124,21 @@
           <div class="form-check form-switch mb-3">
             <input class="form-check-input" type="checkbox" role="switch" id="emailOtpSwitch" bind:checked={sendOtpOverEmailOption} on:click={toggleEmailOption}>
             <label class="form-check-label" for="emailOtpSwitch">
-              {sendOtpOverEmailOption ? 'Email OTP Enabled' : 'Email OTP Disabled'}
+                Send OTP over registered email address
             </label>
           </div>
   
           <div class="form-check form-switch mb-3">
             <input class="form-check-input" type="checkbox" role="switch" id="smsOtpSwitch" bind:checked={sendOtpOverSmsOption} on:click={toggleSmsOption}>
             <label class="form-check-label" for="smsOtpSwitch">
-              {sendOtpOverSmsOption ? 'SMS OTP Enabled' : 'SMS OTP Disabled'}
+                Send OTP over registered mobile number
             </label>
           </div>
   
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="totpSwitch" bind:checked={scanTotpQrCodeOptions} on:click={toggleTotpOption}>
             <label class="form-check-label" for="totpSwitch">
-              {scanTotpQrCodeOptions ? 'TOTP Authenticator Enabled' : 'TOTP Authenticator Disabled'}
+              Authorize using Authenticator
             </label>
           </div>
           {/if}

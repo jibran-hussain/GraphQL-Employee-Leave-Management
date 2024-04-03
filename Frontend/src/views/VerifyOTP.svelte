@@ -1,28 +1,44 @@
 <script>
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import { decodeJwtToken } from "../utils/decodeJwtToken.js";
     import { user } from "../stores/userStore.js";
     import {preAuthEmployeeId} from '../stores/preAuthEmployeeId.js'
     import {goto} from '$app/navigation'
-    
+    import toast, { Toaster } from "svelte-french-toast";
+    import Navbar from '../Components/Navbar.svelte'
 
 
-    let otp;
-    let isValidOTP;
+    let otp=[];
     let employeeId;
+    let timer=15;
+    let showResendOtpLink=false;
+
+    const sendTimer=()=>{
+        showResendOtpLink=false;
+        setInterval(()=>{
+            if(timer < 1){
+                showResendOtpLink=true;
+                clearInterval(sendTimer)
+            }else{
+                timer--;
+            }
+            
+        },1000)
+    }
 
     const handleSubmit=async()=>{
         try{
+            const otpString = otp.join('')
             const response = await fetch(`http://localhost:3000/api/v1/verify-otp?employeeId=${employeeId}`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({token:otp}),
+                body: JSON.stringify({token:otpString}),
                 });
                 let responseBody=await response.json()
-                if(responseBody.jwtToken){
+                if(response.ok){
                     const jwtToken=responseBody.jwtToken;
                     localStorage.setItem('jwt',`${JSON.stringify(jwtToken)}`)
                     const decodedToken=decodeJwtToken(jwtToken);
@@ -30,28 +46,121 @@
                     preAuthEmployeeId.set(null)
                     goto('/dashboard')
                 }else{
-                    
+                    console.log(responseBody,'here is the response body')
+                    toast.error(responseBody.error,{
+                    duration:3000
+                });
                 }
         }catch(error){
             console.log(error)
         }
     }
 
+    const sendOtp = async (employeeId,emailOtp,smsOtp)=>{
+        try{
+            const response = await fetch(`http://localhost:3000/api/v1/send-otp?employeeId=${employeeId}`, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({emailOtp,smsOtp})
+            });
+
+            const responseBody=await response.json();
+            if(response.ok){
+                showResendOtpLink=false;
+                timer=15;
+            }else{
+                toast.error(responseBody.error,{
+                    duration:3000
+                });
+            }
+        }catch(error){
+            console.log(error.message);
+        }
+    }
+
     onMount(()=>{
         if(!$preAuthEmployeeId) goto('/')
         employeeId = $preAuthEmployeeId;
+        sendTimer();
+    })
+
+    onDestroy(()=>{
+        clearInterval(sendTimer)
     })
 </script>
-{isValidOTP}
-<form on:submit|preventDefault={handleSubmit}>
-    <input type="text" placeholder="Enter OTP" bind:value={otp}/>
-    <button>Verify OTP</button>
-</form>
+<Toaster />
+  <div class="container p-5">
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-5 mt-5">
+            <div class="bg-white p-5 rounded-3 shadow-sm border">
+                <div>
+                    <p class="text-center text-success" style="font-size: 5.5rem;"><i class="fa-solid fa-envelope-circle-check"></i></p>
+                    <p class="text-center text-center h5 ">Please check your email</p>
+                    <p class="text-muted text-center">We've sent a code to your email address</p>
+                  
+                    {#if showResendOtpLink}
+                    <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>sendOtp(employeeId,true,false)}>Click to resend.</a></p>
+                    {:else}
+                    <p class="text-muted text-center">Resend OTP link will be available in {timer} seconds</p>
+                    {/if}
 
-<div class="form-check form-switch">
-    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-    <label class="form-check-label" for="flexSwitchCheckDefault">Default switch checkbox input</label>
-  </div>
+                    <div class="row pt-4 pb-2">
+                        <div class="col-2">
+                            <input class="otp-letter-input" type="text" bind:value={otp[0]}>
+                        </div>
+                        <div class="col-2">
+                            <input class="otp-letter-input" type="text" bind:value={otp[1]}>
+                        </div>
+                        <div class="col-2">
+                            <input class="otp-letter-input" type="text" bind:value={otp[2]}>
+                        </div>
+                        <div class="col-2">
+                            <input class="otp-letter-input" type="text" bind:value={otp[3]}>
+                        </div>
+                        <div class="col-2">
+                            <input class="otp-letter-input" type="text" bind:value={otp[4]}>
+                        </div>
+                        <div class="col-2">
+                            <input class="otp-letter-input" type="text" bind:value={otp[5]}>
+                        </div>
+                    </div>
+                    <!-- <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success">Click to resend.</a></p> -->
+
+                    <div class="row pt-5">
+                        <div class="col-6">
+                            <button class="btn btn-outline-secondary w-100">Cancel</button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-success w-100" on:click={handleSubmit}>Verify</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 
-<h1>MFA Settings</h1>
+
+<style>
+    body{
+        background-color: #ebecf0;
+    }
+    .otp-letter-input{
+        max-width: 100%;
+        height: 0.7em;
+        border: 1px solid #198754;
+        border-radius:10px;
+        color: #198754;
+        font-size: 60px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .btn{
+        height: 50px;
+    }
+</style>
