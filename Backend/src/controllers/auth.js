@@ -3,9 +3,11 @@ import { generateHashedPassword } from '../utils/Auth/generateHashedPassword.js'
 import { isValidPassword } from '../utils/Validation/isValidPassword.js'
 import { isValidNumber } from '../utils/Validation/isValidMobile.js';
 import Employee from '../models/employee.js';
-import genereateTotp from "../utils/OTP/generateTotp.js";
 import sendEmail from "../utils/email/sendEmail.js";
 import { generateAuthToken } from "../utils/Auth/geneateAuthToken.js";
+import { generateEmailOtp } from "../utils/OTP/generateOtp.js";
+import { emailOtpConfig, smsOtpConfig } from "../config/otp.js";
+import Otp from "../models/otp.js";
 
 // Creates an admin/employee wiht name,email,password,role,mobileNumber and salary as mandatory fileds.
 // Admin can only be created by Superadmin.
@@ -89,11 +91,54 @@ export const userSignin=async(req,res)=>{
         if(!employee) return res.status(401).json({error:`Invalid credentials`});
 
         if(isValidPassword(password,employee.hashedPassword)){
-            if(employee.mfaEnabled){
-                const otp = genereateTotp();
-                sendEmail('"Jibran" <jibran@mir.com>',`${email}`,'OTP verification',`The OTP for signin is ${otp}. It will expire in 30 seconds`,`The OTP for signin is ${otp}. It will expire in 30 seconds`)
-                console.log(`Your OTP is ${otp}`)
-                return res.json({message: 'OTP has been sent to your registered email address',employeeId:employee.id});
+
+            const enabledMfaOptionsOfEmployee=Object.keys(employee.mfaSettings).filter(mfaOption => employee.mfaSettings[mfaOption] === true)
+
+            if(employee.mfaEnabled ){
+
+                if(enabledMfaOptionsOfEmployee.length > 1) return res.json({message:'Signed in successfully',employeeId:employee.id})
+                
+                else if(enabledMfaOptionsOfEmployee.length === 1 && enabledMfaOptionsOfEmployee.includes('emailOtp')){
+                    const otp = generateEmailOtp();
+                    const emailOtpExpiry = new Date(Date.now() + emailOtpConfig.expiryTime);
+
+                    const isOtpExisting = await Otp.findByPk(employee.id);
+
+                    if(isOtpExisting){
+                        await Otp.update({emailOtp:otp,emailOtpExpiry },{
+                            where:{
+                                employeeId:employee.id
+                            }
+                        });
+                    }else{
+                        await Otp.create({employeeId:employee.id,emailOtp:otp,emailOtpExpiry });
+                    } 
+
+                    
+                    sendEmail('"Jibran" <jibran@mir.com>',`${email}`,'OTP verification',`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes `,`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`)
+                    return res.json({message: 'OTP has been sent to your registered email address',employeeId:employee.id});
+
+                }else if(enabledMfaOptionsOfEmployee.length === 1 && enabledMfaOptionsOfEmployee.includes('smsOtp')){
+                    const otp = generateSmsOtp();
+                    const smsOtpExpiry = new Date(Date.now() + smsOtpConfig.expiryTime);
+
+                    const isOtpExisting = await Otp.findByPk(employee.id);
+
+                    if(isOtpExisting){
+                        await Otp.update({smsOtp:otp,smsOtpExpiry },{
+                            where:{
+                                employeeId:employee.id
+                            }
+                        });
+                    }else{
+                        await Otp.create({employeeId:employee.id,smsOtp:otp,smsOtpExpiry });
+                    } 
+
+                    
+                    // Here will be the send sms logic
+
+                    return res.json({message: 'OTP has been sent to your registered mobile number',employeeId:employee.id});
+                }
             }
             else{
                 const token=generateAuthToken(employee.id,employee.email,employee.role)
