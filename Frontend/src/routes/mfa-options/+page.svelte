@@ -33,7 +33,7 @@
 
     const sendOtp = async (employeeId,emailOtp,smsOtp)=>{
         try{
-            const response = await fetch(`http://localhost:3000/api/v1/send-otp?employeeId=${employeeId}`, {
+            const response = await fetch(`http://localhost:3000/api/v1/otp/send?employeeId=${employeeId}`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",

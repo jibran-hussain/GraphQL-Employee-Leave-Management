@@ -10,7 +10,8 @@
 
     let otp;
     let employeeId;
-    let timer=20;
+    let timerValue = 5;
+    let timer=timerValue;;
     let showResendOtpLink=false;
 
     const sendTimer=()=>{
@@ -28,7 +29,7 @@
 
     const handleSubmit=async()=>{
         try{
-            const response = await fetch(`http://localhost:3000/api/v1/verify-otp?employeeId=${employeeId}`, {
+            const response = await fetch(`http://localhost:3000/api/v1/otp/verify?employeeId=${employeeId}`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -55,9 +56,9 @@
         }
     }
 
-    const sendOtp = async (employeeId,emailOtp,smsOtp)=>{
+    const resendOtp = async (employeeId,emailOtp,smsOtp)=>{
         try{
-            const response = await fetch(`http://localhost:3000/api/v1/resend-otp?employeeId=${employeeId}`, {
+            const response = await fetch(`http://localhost:3000/api/v1/otp/resend?employeeId=${employeeId}`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -69,12 +70,13 @@
             const responseBody=await response.json();
             if(response.ok){
                 showResendOtpLink=false;
-                timer=20;
+                timer=timerValue;
             }else{
                 toast.error(responseBody.error,{
                     duration:3000
                 });
             }
+            otp = ''
         }catch(error){
             console.log(error.message);
         }
@@ -102,9 +104,9 @@
                     <p class="text-muted text-center">We've sent a OTP to your email address</p>
                   
                     {#if showResendOtpLink}
-                    <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>sendOtp(employeeId,true,false)}>Click to resend.</a></p>
+                    <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>resendOtp(employeeId,true,false)}>Click to resend.</a></p>
                     {:else}
-                    <p class="text-muted text-center">Resend OTP link will be available in {Math.floor(timer/360)}: {Math.floor((timer%60))} seconds</p>
+                    <p class="text-muted text-center">Resend OTP link will be available in {Math.floor(timer/360)} minutes {Math.floor((timer%60))} seconds</p>
                     {/if}
 
                     <div class="row pt-4 pb-2">
@@ -112,13 +114,9 @@
                             <input class="otp-letter-input" type="text" bind:value={otp}>
                         </div>
                     </div>
-                    <!-- <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success">Click to resend.</a></p> -->
 
-                    <div class="row pt-5">
-                        <div class="col-6">
-                            <button class="btn btn-outline-secondary w-100">Cancel</button>
-                        </div>
-                        <div class="col-6">
+                    <div class="row pt-5 justify-content-center">
+                        <div class="col-12">
                             <button class="btn btn-success w-100" on:click={handleSubmit}>Verify</button>
                         </div>
                     </div>
@@ -131,9 +129,6 @@
 
 
 <style>
-    body{
-        background-color: #ebecf0;
-    }
     .otp-letter-input{
         max-width: 100%;
         height: 1.4em;
