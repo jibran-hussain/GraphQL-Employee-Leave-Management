@@ -10,7 +10,7 @@ import sequelize from '../../index.js';
 import {generateAuthToken} from '../utils/Auth/geneateAuthToken.js'
 import Otp from '../models/otp.js';
 import { generateEmailOtp } from '../utils/OTP/generateOtp.js';
-import { emailOtpConfig,smsOtpConfig,resendEmailOtpConfig } from '../config/otp.js';
+import { emailOtpConfig,smsOtpConfig } from '../config/otp.js';
 import sendEmail from '../utils/email/sendEmail.js';
 
 
@@ -550,9 +550,10 @@ export const resendOTP=async(req,res)=>{
         const otpRecord = await Otp.findByPk(employee.id);
 
         const {emailOtp,smsOtp} = req.body;
-        const resendLimit=resendEmailOtpConfig.resendLimit;
-        const cooldownPeriod = resendEmailOtpConfig.cooldownPeriod;
-        const maxResendDuration = resendEmailOtpConfig.maxResendDuration;
+
+        const resendLimit=emailOtpConfig.resendLimit;
+        const cooldownPeriod = emailOtpConfig.cooldownPeriod;
+        const maxResendDuration = emailOtpConfig.maxResendDuration;
 
         // Check condition whether the OTP is to be sent over Email or SMS.
         if(emailOtp){
@@ -593,6 +594,7 @@ export const resendOTP=async(req,res)=>{
                             employeeId:employee.id
                         }
                     });
+                    
                 }else{
                     await Otp.update({emailOtp:otp,emailOtpExpiry,emailOtpResendAttemptsCount:otpRecord.emailOtpResendAttemptsCount+1,emailOtplastResendAttempt:new Date() },{
                         where:{
@@ -631,6 +633,11 @@ export const verifyOTP=async(req,res)=>{
         const currentDate = new Date(Date.now());
         
         if(otpDetailsOfEmployee.emailOtp === token && currentDate < otpDetailsOfEmployee.emailOtpExpiry){
+            await Otp.update({emailOtpResendAttemptsCount:0,emailOtpFirstResendAttempt:null,emailOtplastResendAttempt:null},{
+                where:{
+                    employeeId:employee.id
+                }
+            })
             const jwtToken=generateAuthToken(employee.id,employee.email,employee.role)
             return res.json({ jwtToken })
         }
