@@ -18,7 +18,27 @@ const Otp=sequelize.define('Otp',{
     },
     smsOtpExpiry:{
         type: DataTypes.DATE
-    }
+    },
+    emailOtpResendAttemptsCount:{
+        type:DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    emailOtpFirstResendAttempt:{
+        type: DataTypes.DATE
+    },
+    emailOtplastResendAttempt:{
+        type: DataTypes.DATE
+    },
+    smsOtpResendAttemptsCount:{
+        type:DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    smsOtpFirstResendAttempt:{
+        type: DataTypes.DATE
+    },
+    smsOtplastResendAttempt:{
+        type: DataTypes.DATE
+    },
 })
 
 export default Otp;
