@@ -36,13 +36,13 @@ router.patch('/me/password',isAuth,resetPassword)
 router.patch('/mfa-settings',isAuth,manageMfaSettings)
 
 // Send OTP
-router.post('/send-otp',sendOTP)
+router.post('/otp/send',sendOTP)
 
 // Resend OTP (Resend limits functionality)
-router.post('/resend-otp',resendOTP)
+router.post('/otp/resend',resendOTP)
 
 // Verify OTP
-router.post('/verify-otp',verifyOTP);
+router.post('/otp/verify',verifyOTP);
 
 // Get Multi-factor Authentication details of an employee
 router.get('/mfa-details',getMfaDetailsofUser);
