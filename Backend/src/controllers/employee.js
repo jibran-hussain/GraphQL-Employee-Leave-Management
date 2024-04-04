@@ -1,9 +1,8 @@
 import Employee from '../models/employee.js';
 import Leave from '../models/leaves.js';
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
 import 'dotenv/config'
 import bcrypt from 'bcrypt';
-import verifyTotp from '../utils/OTP/verifyTotp.js';
 import { generateHashedPassword } from '../utils/Auth/generateHashedPassword.js';
 import { isValidNumber } from '../utils/Validation/isValidMobile.js';
 import {passwordValidation} from '../utils/Validation/validations.js'
@@ -11,7 +10,7 @@ import sequelize from '../../index.js';
 import {generateAuthToken} from '../utils/Auth/geneateAuthToken.js'
 import Otp from '../models/otp.js';
 import { generateEmailOtp } from '../utils/OTP/generateOtp.js';
-import { emailOtpConfig,smsOtpConfig } from '../config/otp.js';
+import { emailOtpConfig,smsOtpConfig,resendEmailOtpConfig } from '../config/otp.js';
 import sendEmail from '../utils/email/sendEmail.js';
 
 
@@ -542,6 +541,78 @@ export const sendOTP = async(req,res)=>{
     }
 }
 
+export const resendOTP=async(req,res)=>{
+    try{
+        const employeeId = Number(req.query.employeeId);
+        const employee = await Employee.findByPk(employeeId)
+
+        if(!employee) return res.status(404).json({error: `Employee with this id does not exist`});
+        const otpRecord = await Otp.findByPk(employee.id);
+
+        const {emailOtp,smsOtp} = req.body;
+        const resendLimit=resendEmailOtpConfig.resendLimit;
+        const cooldownPeriod = resendEmailOtpConfig.cooldownPeriod;
+        const maxResendDuration = resendEmailOtpConfig.maxResendDuration;
+
+        // Check condition whether the OTP is to be sent over Email or SMS.
+        if(emailOtp){
+            // If the OTP is to be sent over email
+            
+            // Generating the OTP for email
+            const otp = generateEmailOtp();
+
+            // Setting the OTP expiry time
+            const emailOtpExpiry = new Date(Date.now() + emailOtpConfig.expiryTime);
+
+            // If resend OTP has reached its maximum limit and the cooldown period is not over yet
+            if(otpRecord.emailOtpResendAttemptsCount >= resendLimit && otpRecord.emailOtplastResendAttempt && Date.now() - new Date(otpRecord.emailOtplastResendAttempt).getTime() < cooldownPeriod){
+                return res.status(403).json({ error: 'Maximum resend attempts exceeded. Please wait before trying again.' });
+            }
+
+            // If resend OTP has reached its maximum limit but the cooldown period is over
+            else if(otpRecord.emailOtpResendAttemptsCount >= resendLimit && otpRecord.emailOtplastResendAttempt && Date.now() - new Date(otpRecord.emailOtplastResendAttempt).getTime() > cooldownPeriod){
+                await Otp.update({emailOtp:otp,emailOtpExpiry,emailOtpResendAttemptsCount:1,emailOtplastResendAttempt:new Date(),emailOtpFirstResendAttempt: new Date()},{where:{
+                    employeeId:employee.id
+                }})
+            }
+
+            // If resend OTP has not reached its maximum limit and current time is greater than the max recent duration
+            else if(otpRecord.emailOtpResendAttemptsCount <= resendLimit && otpRecord.emailOtplastResendAttempt && Date.now() > (otpRecord.emailOtpFirstResendAttempt.getTime() + maxResendDuration)){
+                
+                await Otp.update({emailOtp:otp,emailOtpExpiry,emailOtpResendAttemptsCount:1,emailOtplastResendAttempt:new Date(),emailOtpFirstResendAttempt: new Date()},{where:{
+                    employeeId:employee.id
+                }})
+            }
+
+            // Normal case of resending OTP
+            else if(otpRecord.emailOtpResendAttemptsCount < resendLimit){
+
+                if(otpRecord.emailOtpResendAttemptsCount < 1){
+                    await Otp.update({emailOtp:otp,emailOtpExpiry,emailOtpResendAttemptsCount:otpRecord.emailOtpResendAttemptsCount+1,emailOtplastResendAttempt:new Date(),emailOtpFirstResendAttempt: new Date() },{
+                        where:{
+                            employeeId:employee.id
+                        }
+                    });
+                }else{
+                    await Otp.update({emailOtp:otp,emailOtpExpiry,emailOtpResendAttemptsCount:otpRecord.emailOtpResendAttemptsCount+1,emailOtplastResendAttempt:new Date() },{
+                        where:{
+                            employeeId:employee.id
+                        }
+                    });
+                }
+            }
+            
+            sendEmail('"Jibran" <jibran@mir.com>',`${employee.email}`,'OTP verification',`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`,`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`)
+            return res.json({message: 'OTP has been sent to your registered email address',employeeId:employee.id});
+        }else if(smsOtp){
+            
+        }
+    }catch(error){
+        console.log(`Error in resendOTP`,error)
+        return res.status(500).json({error:error.message});
+    }
+}
+
 export const verifyOTP=async(req,res)=>{
     try{
         const employeeId = Number(req.query.employeeId);
@@ -604,4 +675,5 @@ export const getMfaDetailsofUser=async(req,res)=>{
         return res.status(500).json({error:error.message});
     }
 }
+
 
