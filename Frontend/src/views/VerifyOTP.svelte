@@ -8,15 +8,15 @@
     import Navbar from '../Components/Navbar.svelte'
 
 
-    let otp=[];
+    let otp;
     let employeeId;
-    let timer=15;
+    let timer=20;
     let showResendOtpLink=false;
 
     const sendTimer=()=>{
         showResendOtpLink=false;
         setInterval(()=>{
-            if(timer < 1){
+            if(timer <= 1){
                 showResendOtpLink=true;
                 clearInterval(sendTimer)
             }else{
@@ -28,14 +28,13 @@
 
     const handleSubmit=async()=>{
         try{
-            const otpString = otp.join('')
             const response = await fetch(`http://localhost:3000/api/v1/verify-otp?employeeId=${employeeId}`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({token:otpString}),
+                body: JSON.stringify({token:otp}),
                 });
                 let responseBody=await response.json()
                 if(response.ok){
@@ -58,7 +57,7 @@
 
     const sendOtp = async (employeeId,emailOtp,smsOtp)=>{
         try{
-            const response = await fetch(`http://localhost:3000/api/v1/send-otp?employeeId=${employeeId}`, {
+            const response = await fetch(`http://localhost:3000/api/v1/resend-otp?employeeId=${employeeId}`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -70,7 +69,7 @@
             const responseBody=await response.json();
             if(response.ok){
                 showResendOtpLink=false;
-                timer=15;
+                timer=20;
             }else{
                 toast.error(responseBody.error,{
                     duration:3000
@@ -100,32 +99,17 @@
                 <div>
                     <p class="text-center text-success" style="font-size: 5.5rem;"><i class="fa-solid fa-envelope-circle-check"></i></p>
                     <p class="text-center text-center h5 ">Please check your email</p>
-                    <p class="text-muted text-center">We've sent a code to your email address</p>
+                    <p class="text-muted text-center">We've sent a OTP to your email address</p>
                   
                     {#if showResendOtpLink}
                     <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>sendOtp(employeeId,true,false)}>Click to resend.</a></p>
                     {:else}
-                    <p class="text-muted text-center">Resend OTP link will be available in {timer} seconds</p>
+                    <p class="text-muted text-center">Resend OTP link will be available in {Math.floor(timer/360)}: {Math.floor((timer%60))} seconds</p>
                     {/if}
 
                     <div class="row pt-4 pb-2">
-                        <div class="col-2">
-                            <input class="otp-letter-input" type="text" bind:value={otp[0]}>
-                        </div>
-                        <div class="col-2">
-                            <input class="otp-letter-input" type="text" bind:value={otp[1]}>
-                        </div>
-                        <div class="col-2">
-                            <input class="otp-letter-input" type="text" bind:value={otp[2]}>
-                        </div>
-                        <div class="col-2">
-                            <input class="otp-letter-input" type="text" bind:value={otp[3]}>
-                        </div>
-                        <div class="col-2">
-                            <input class="otp-letter-input" type="text" bind:value={otp[4]}>
-                        </div>
-                        <div class="col-2">
-                            <input class="otp-letter-input" type="text" bind:value={otp[5]}>
+                        <div class="col-12">
+                            <input class="otp-letter-input" type="text" bind:value={otp}>
                         </div>
                     </div>
                     <!-- <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success">Click to resend.</a></p> -->
@@ -152,13 +136,14 @@
     }
     .otp-letter-input{
         max-width: 100%;
-        height: 0.7em;
+        height: 1.4em;
         border: 1px solid #198754;
         border-radius:10px;
         color: #198754;
-        font-size: 60px;
+        font-size: 30px;
         text-align: center;
-        font-weight: bold;
+        font-weight: 500;
+        letter-spacing: 0.2em;
     }
     .btn{
         height: 50px;
