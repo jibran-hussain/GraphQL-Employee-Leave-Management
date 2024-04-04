@@ -1,5 +1,5 @@
 import express from 'express'
-import {deleteEmployee,listAllEmployees,activateAccount,getLoggedUsersDetails,updateProfile,getEmployeeDetails,updateEmployeeProfile,updatedProfileByPutMethod,updateEmployeeProfileByPut,resetPassword, deleteMe,manageMfaSettings,verifyOTP,getMfaDetailsofUser,sendOTP} from '../controllers/employee.js'
+import {deleteEmployee,listAllEmployees,activateAccount,getLoggedUsersDetails,updateProfile,getEmployeeDetails,updateEmployeeProfile,updatedProfileByPutMethod,updateEmployeeProfileByPut,resetPassword, deleteMe,manageMfaSettings,verifyOTP,getMfaDetailsofUser,sendOTP,resendOTP} from '../controllers/employee.js'
 import { isAuth } from '../middlewares/isAuth.js';
 import { isAdminOrSuperadmin } from '../middlewares/isAdminOrSuperadmin.js';
 const router=express.Router();
@@ -37,6 +37,9 @@ router.patch('/mfa-settings',isAuth,manageMfaSettings)
 
 // Send OTP
 router.post('/send-otp',sendOTP)
+
+// Resend OTP (Resend limits functionality)
+router.post('/resend-otp',resendOTP)
 
 // Verify OTP
 router.post('/verify-otp',verifyOTP);
