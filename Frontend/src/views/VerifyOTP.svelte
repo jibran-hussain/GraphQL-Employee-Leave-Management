@@ -106,12 +106,12 @@
                     {#if showResendOtpLink}
                     <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>resendOtp(employeeId,true,false)}>Click to resend.</a></p>
                     {:else}
-                    <p class="text-muted text-center">Resend OTP link will be available in {Math.floor(timer/360)} minutes {Math.floor((timer%60))} seconds</p>
+                    <p class="text-muted text-center">Resend OTP link will be available in {Math.floor(timer/60) === 0?'':`${Math.floor(timer/60)} minutes`} {Math.floor((timer % 60))} seconds</p>
                     {/if}
 
-                    <div class="row pt-4 pb-2">
-                        <div class="col-12">
-                            <input class="otp-letter-input" type="text" bind:value={otp}>
+                    <div class="row pt-4 pb-2 ">
+                        <div class="col-12 py-0 text-center">
+                            <input class="otp-letter-input " type="text" bind:value={otp}>
                         </div>
                     </div>
 
