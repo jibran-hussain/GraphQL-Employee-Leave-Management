@@ -547,10 +547,13 @@ export const resendOTP=async(req,res)=>{
         const employee = await Employee.findByPk(employeeId)
 
         if(!employee) return res.status(404).json({error: `Employee with this id does not exist`});
+
+        // Retrieve OTP record of the employee
         const otpRecord = await Otp.findByPk(employee.id);
 
         const {emailOtp,smsOtp} = req.body;
 
+        // Config details regarding sending otp over email
         const resendLimit=emailOtpConfig.resendLimit;
         const cooldownPeriod = emailOtpConfig.cooldownPeriod;
         const maxResendDuration = emailOtpConfig.maxResendDuration;
@@ -606,9 +609,12 @@ export const resendOTP=async(req,res)=>{
             
             sendEmail('"Jibran" <jibran@mir.com>',`${employee.email}`,'OTP verification',`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`,`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`)
             return res.json({message: 'OTP has been sent to your registered email address',employeeId:employee.id});
+
         }else if(smsOtp){
-            
+             // Handling OTP resending via SMS
+            // Implementation for SMS OTP sending
         }
+        
     }catch(error){
         console.log(`Error in resendOTP`,error)
         return res.status(500).json({error:error.message});
