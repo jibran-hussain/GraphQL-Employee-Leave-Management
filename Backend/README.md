@@ -29,6 +29,24 @@ DEFAULT_MFA_OPTION: The default multi-factor authentication option eg. 'emailOtp
 TWILIO_ACCOUNT_SID: The Twilio account SID for sending SMS.
 TWILIO_AUTH_TOKEN: The Twilio authentication token for sending SMS.
 
+## Sample .env file
+
+SALT_ROUNDS=10
+JWT_SECRET_KEY='thisisasecretkey'
+API_VERSION=v1
+DB_NAME='employee_leave_management_system'
+DB_USERNAME='postgres'
+DB_PASSWORD='postgres'
+TOTP_STEP=120
+TOTP_SECRET='KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD'
+EMAIL_USER='mara7sfgs2@etfsgshereal.email'
+EMAIL_PASSWORD='Tbssf23SG2FHsdfgyggGYBCee@z'
+EMAIL_PORT=587
+EMAIL_HOST='smtpadf.etherfasdgeal.emfresail'
+DEFAULT_MFA_OPTION='emailOtp'
+TWILLIO_ACCOUNT_SID = ACba63dagerg3297475ca2657f56c8df5b18927fasdggr@4fc46
+TWILIO_AUTH_TOKEN = ff352fasef@90e2adsfa32f47f66f8ab1179edgsfa43dfe4ebfd1
+
   ```
 4 . Run the project using the following command:
 ```bash
