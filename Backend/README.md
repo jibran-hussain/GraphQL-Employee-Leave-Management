@@ -6,21 +6,19 @@
   cd path-to-the-project
 ```
 
-2 . Install dependencies
+2 . Go to the Backend directory and setup the backend of the project using the respective README.md file
 ```bash
-  npm i
+  cd path-to-the-backend
 ```
-3 .Specify the following environment variables:
-
-  ```bash
-PORT=3000
-SALT_ROUNDS=10
-JWT_SECRET_KEY='thisisasecretkey'
-API_VERSION=v1
-
-  ```
-4 . Run the project using the following command:
+3 .  Go to the Frontend directory and setup the backend of the project using the respective README.md file
 ```bash
-  npm start
+  cd path-to-the-frontend
 ```
+4 .  Go to the GraphQL_Layer directory and setup the backend of the project using the respective README.md file
+```bash
+  cd path-to-the-GraphQL_Layer
+```
+
+
+
       
