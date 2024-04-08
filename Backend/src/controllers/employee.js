@@ -12,6 +12,7 @@ import Otp from '../models/otp.js';
 import { generateEmailOtp } from '../utils/OTP/generateOtp.js';
 import { emailOtpConfig,smsOtpConfig } from '../config/otp.js';
 import sendEmail from '../utils/email/sendEmail.js';
+import sendSms from '../utils/sms/sendSms.js'
 
 
 // This method gives the list of all active and deactivated employees.
@@ -512,13 +513,16 @@ export const sendOTP = async(req,res)=>{
 
         const {emailOtp,smsOtp} = req.body;
 
+        const otp = generateEmailOtp();
+
         if(emailOtp){
-            const otp = generateEmailOtp();
+            // If the OTP is to be sent over the email
+
             const emailOtpExpiry = new Date(Date.now() + emailOtpConfig.expiryTime);
 
-            const isOtpExisting = await Otp.findByPk(employee.id);
+            const isEmailOtpExisting = await Otp.findByPk(employee.id);
             
-            if(isOtpExisting){
+            if(isEmailOtpExisting){
                 await Otp.update({emailOtp:otp,emailOtpExpiry },{
                     where:{
                         employeeId:employee.id
@@ -531,7 +535,28 @@ export const sendOTP = async(req,res)=>{
             
             sendEmail('"Jibran" <jibran@mir.com>',`${employee.email}`,'OTP verification',`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`,`The OTP for signin is ${otp}. It will expire in ${emailOtpConfig.expiryTime/1000/60} minutes`)
             return res.json({message: 'OTP has been sent to your registered email address',employeeId:employee.id});
-        }else{
+        }else if(smsOtp){
+            // If the OTP is to be sent over the SMS
+
+            console.log('i am in sms')
+            const smsOtpExpiry = new Date(Date.now() + smsOtpConfig.expiryTime);
+
+            const isSmsOtpExisting = await Otp.findByPk(employee.id);
+
+            if(isSmsOtpExisting){
+                await Otp.update({smsOtp:otp,smsOtpExpiry },{
+                    where:{
+                        employeeId:employee.id
+                    }
+                });
+            }else{
+                await Otp.create({employeeId:employee.id,smsOtp:otp,smsOtpExpiry });
+            } 
+            
+            const message = `Your OTP (One Time Password) for signing in is ${otp}`;
+            const countryCode = '+91'
+            sendSms(countryCode + employee.mobileNumber,message)
+            return res.json({message: 'OTP has been sent to your registered mobile number',employeeId:employee.id});
 
         }
 
@@ -613,6 +638,58 @@ export const resendOTP=async(req,res)=>{
         }else if(smsOtp){
              // Handling OTP resending via SMS
             // Implementation for SMS OTP sending
+
+             // If the OTP is to be sent over email
+            
+            // Generating the OTP for email
+            console.log('in smsOtp')
+            const otp = generateEmailOtp();
+
+            // Setting the OTP expiry time
+            const smsOtpExpiry = new Date(Date.now() + smsOtpConfig.expiryTime);
+
+            // If resend OTP has reached its maximum limit and the cooldown period is not over yet
+            if(otpRecord.smsOtpResendAttemptsCount >= resendLimit && otpRecord.smsOtplastResendAttempt && Date.now() - new Date(otpRecord.smsOtplastResendAttempt).getTime() < cooldownPeriod){
+                return res.status(403).json({ error: 'Maximum resend attempts exceeded. Please wait before trying again.' });
+            }
+
+            // If resend OTP has reached its maximum limit but the cooldown period is over
+            else if(otpRecord.smsOtpResendAttemptsCount >= resendLimit && otpRecord.smsOtplastResendAttempt && Date.now() - new Date(otpRecord.smsOtplastResendAttempt).getTime() > cooldownPeriod){
+                await Otp.update({smsOtp:otp,smsOtpExpiry,smsOtpResendAttemptsCount:1,smsOtplastResendAttempt:new Date(),smsOtpFirstResendAttempt: new Date()},{where:{
+                    employeeId:employee.id
+                }})
+            }
+
+            // If resend OTP has not reached its maximum limit and current time is greater than the max recent duration
+            else if(otpRecord.smsOtpResendAttemptsCount <= resendLimit && otpRecord.smsOtplastResendAttempt && Date.now() > (otpRecord.smsOtpFirstResendAttempt.getTime() + maxResendDuration)){
+                
+                await Otp.update({smsOtp:otp,smsOtpExpiry,smsOtpResendAttemptsCount:1,smsOtplastResendAttempt:new Date(),smsOtpFirstResendAttempt: new Date()},{where:{
+                    employeeId:employee.id
+                }})
+            }
+
+            // Normal case of resending OTP
+            else if(otpRecord.smsOtpResendAttemptsCount < resendLimit){
+
+                if(otpRecord.smsOtpResendAttemptsCount < 1){
+                    await Otp.update({smsOtp:otp,smsOtpExpiry,smsOtpResendAttemptsCount:otpRecord.smsOtpResendAttemptsCount+1,smsOtplastResendAttempt:new Date(),smsOtpFirstResendAttempt: new Date() },{
+                        where:{
+                            employeeId:employee.id
+                        }
+                    });
+                    
+                }else{
+                    await Otp.update({smsOtp:otp,smsOtpExpiry,smsOtpResendAttemptsCount:otpRecord.smsOtpResendAttemptsCount+1,smsOtplastResendAttempt:new Date() },{
+                        where:{
+                            employeeId:employee.id
+                        }
+                    });
+                }
+            }
+            
+            const message = `The OTP for signin is ${otp}. It will expire in ${smsOtpConfig.expiryTime/1000/60} minutes`
+            sendSms(employee.mobileNumber,message);
+            return res.json({message: 'OTP has been sent to your registered mobile number',employeeId:employee.id});
         }
         
     }catch(error){
@@ -628,7 +705,7 @@ export const verifyOTP=async(req,res)=>{
 
         if(!employee) return res.status(404).json({error: `Employee with this id does not exist`});
 
-        const {token} = req.body;
+        const {token,sms,email} = req.body;
 
         // Verifying the otp
         const otpDetailsOfEmployee = await Otp.findByPk(employeeId);
@@ -638,8 +715,16 @@ export const verifyOTP=async(req,res)=>{
 
         const currentDate = new Date(Date.now());
         
-        if(otpDetailsOfEmployee.emailOtp === token && currentDate < otpDetailsOfEmployee.emailOtpExpiry){
+        if(email && otpDetailsOfEmployee.emailOtp === token && currentDate < otpDetailsOfEmployee.emailOtpExpiry){
             await Otp.update({emailOtpResendAttemptsCount:0,emailOtpFirstResendAttempt:null,emailOtplastResendAttempt:null},{
+                where:{
+                    employeeId:employee.id
+                }
+            })
+            const jwtToken=generateAuthToken(employee.id,employee.email,employee.role)
+            return res.json({ jwtToken })
+        }else if(sms && otpDetailsOfEmployee.smsOtp === token && currentDate < otpDetailsOfEmployee.smsOtpExpiry){
+            await Otp.update({smsOtpResendAttemptsCount:0,smsOtpFirstResendAttempt:null,smsOtplastResendAttempt:null},{
                 where:{
                     employeeId:employee.id
                 }
