@@ -33,6 +33,7 @@ TWILIO_AUTH_TOKEN: The Twilio authentication token for sending SMS.
 
 ## Sample .env file
 
+```bash
 SALT_ROUNDS=10
 JWT_SECRET_KEY='thisisasecretkey'
 API_VERSION=v1
@@ -48,6 +49,7 @@ EMAIL_HOST='smtpadf.etherfasdgeal.emfresail'
 DEFAULT_MFA_OPTION='emailOtp'
 TWILLIO_ACCOUNT_SID = ACba63dagerg3297475ca2657f56c8df5b18927fasdggr@4fc46
 TWILIO_AUTH_TOKEN = ff352fasef@90e2adsfa32f47f66f8ab1179edgsfa43dfe4ebfd1
+```
 
 4 . Run the project using the following command:
 ```bash
