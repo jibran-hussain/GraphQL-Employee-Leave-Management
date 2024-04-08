@@ -3,7 +3,7 @@
 
 1 . Go the Frontend directory.
 ```bash
-  cd path-to-backend
+  cd path-to-frontend
 ```
 
 2 . Install dependencies
