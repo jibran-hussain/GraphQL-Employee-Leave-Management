@@ -29,6 +29,8 @@ DEFAULT_MFA_OPTION: The default multi-factor authentication option eg. 'emailOtp
 TWILIO_ACCOUNT_SID: The Twilio account SID for sending SMS.
 TWILIO_AUTH_TOKEN: The Twilio authentication token for sending SMS.
 
+  ```
+
 ## Sample .env file
 
 SALT_ROUNDS=10
@@ -47,7 +49,6 @@ DEFAULT_MFA_OPTION='emailOtp'
 TWILLIO_ACCOUNT_SID = ACba63dagerg3297475ca2657f56c8df5b18927fasdggr@4fc46
 TWILIO_AUTH_TOKEN = ff352fasef@90e2adsfa32f47f66f8ab1179edgsfa43dfe4ebfd1
 
-  ```
 4 . Run the project using the following command:
 ```bash
   npm run dev
