@@ -8,6 +8,7 @@ import { generateAuthToken } from "../utils/Auth/geneateAuthToken.js";
 import { generateEmailOtp } from "../utils/OTP/generateOtp.js";
 import { emailOtpConfig, smsOtpConfig } from "../config/otp.js";
 import Otp from "../models/otp.js";
+import sendSms from "../utils/sms/sendSms.js";
 
 // Creates an admin/employee wiht name,email,password,role,mobileNumber and salary as mandatory fileds.
 // Admin can only be created by Superadmin.
@@ -136,7 +137,8 @@ export const userSignin=async(req,res)=>{
 
                     
                     // Here will be the send sms logic
-
+                    const message = `The OTP for signin is ${otp}. It will expire in ${smsOtpConfig.expiryTime/1000/60} minutes`;
+                    sendSms(employee.mobileNumber,message);
                     return res.json({message: 'OTP has been sent to your registered mobile number',employeeId:employee.id});
                 }
             }
