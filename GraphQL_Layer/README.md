@@ -10,7 +10,7 @@
 ```bash
   npm i
 ```
-3 . Start the frontend server
+3 . Start the apollo server
 ```bash
   npm run dev
 ```

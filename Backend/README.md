@@ -17,6 +17,7 @@ PORT=3000
 SALT_ROUNDS=10
 JWT_SECRET_KEY='thisisasecretkey'
 API_VERSION=v1
+DB_NAME='employee_leave_management_system'
 DB_USERNAME: The username for connecting to the database.
 DB_PASSWORD: The password for connecting to the database.
 TOTP_STEP: The time step for TOTP (Time-based One-Time Password) generation. eg 120
@@ -34,6 +35,7 @@ TWILIO_AUTH_TOKEN: The Twilio authentication token for sending SMS.
 ## Sample .env file
 
 ```bash
+PORT=3000
 SALT_ROUNDS=10
 JWT_SECRET_KEY='thisisasecretkey'
 API_VERSION=v1
