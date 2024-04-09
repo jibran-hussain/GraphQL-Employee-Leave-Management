@@ -1,20 +1,24 @@
 
 ## Installation
+1 . Clone the repository
+```bash
+  git clone https://github.com/jibran-hussain/GraphQL-Employee-Leave-Management.git
+```
 
-1 . Go the project directory.
+2 . Go the project directory.
 ```bash
   cd path-to-the-project
 ```
 
-2 . Go to the Backend directory and setup the backend of the project using the respective README.md file
+3 . Go to the Backend directory and setup the backend of the project using the respective README.md file
 ```bash
   cd path-to-the-backend
 ```
-3 .  Go to the Frontend directory and setup the backend of the project using the respective README.md file
+4 .  Go to the Frontend directory and setup the backend of the project using the respective README.md file
 ```bash
   cd path-to-the-frontend
 ```
-4 .  Go to the GraphQL_Layer directory and setup the backend of the project using the respective README.md file
+5 .  Go to the GraphQL_Layer directory and setup the backend of the project using the respective README.md file
 ```bash
   cd path-to-the-GraphQL_Layer
 ```
