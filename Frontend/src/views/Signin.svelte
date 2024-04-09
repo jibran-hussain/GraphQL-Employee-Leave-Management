@@ -83,7 +83,8 @@
                         preAuthEmployeeId.set(employeeId)
                         const {enabledMfaOptions} = await getMfaDetails(employeeId);
                         if(enabledMfaOptions.length > 1)  goto(`/mfa-options`);
-                        else if(enabledMfaOptions.length === 1 && enabledMfaOptions[0] === 'emailOtp') goto(`/verify-otp`)
+                        else if(enabledMfaOptions.length === 1 && enabledMfaOptions[0] === 'emailOtp') goto(`/verify-otp?email=true`)
+                        else if(enabledMfaOptions.length === 1 && enabledMfaOptions[0] === 'smsOtp') goto(`/verify-otp?sms=true`)
                     }
                 }
             }
