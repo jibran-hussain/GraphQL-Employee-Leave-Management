@@ -1,9 +1,9 @@
 
 ## Installation
 
-1 . Go the Frontend directory.
+1 . Go the GraphQL_Layer directory.
 ```bash
-  cd path-to-frontend
+  cd path-to-graphql_layer
 ```
 
 2 . Install dependencies

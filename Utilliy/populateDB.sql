@@ -12,7 +12,9 @@ CREATE TABLE public."Employees" (
     "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deletedAt" TIMESTAMP WITH TIME ZONE,
-    "profilePictureURL" TEXT
+    "profilePictureURL" TEXT,
+    "mfaEnabled" BOOLEAN DEFAULT FALSE,
+    "mfaSettings" JSONB DEFAULT '{"emailOtp": false, "smsOtp": false, "totp": false}'
 );
 
 -- Create Leaves table
@@ -26,6 +28,20 @@ CREATE TABLE public."Leaves" (
     "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deletedAt" TIMESTAMP WITH TIME ZONE,
     "employeeId" INTEGER REFERENCES public."Employees"(id) ON UPDATE CASCADE ON DELETE SET NULL
+);
+
+CREATE TABLE public."Otps" (
+    "employeeId" INT PRIMARY KEY,
+    "emailOtp" VARCHAR(255),
+    "emailOtpExpiry" TIMESTAMP,
+    "smsOtp" VARCHAR(255),
+    "smsOtpExpiry" TIMESTAMP,
+    "emailOtpResendAttemptsCount" INTEGER DEFAULT 0,
+    "emailOtpFirstResendAttempt" TIMESTAMP,
+    "emailOtplastResendAttempt" TIMESTAMP,
+    "smsOtpResendAttemptsCount" INTEGER DEFAULT 0,
+    "smsOtpFirstResendAttempt" TIMESTAMP,
+    "smsOtplastResendAttempt" TIMESTAMP
 );
 
 
@@ -82,14 +98,14 @@ VALUES
 (56, 'Employee 1', 'employee1@gmail.com', '$2b$10$/R2bfeKskUAZdsqSf97yJusNBbWb9IgbVpw2/a/Kr/agyFhNF.WV6', '2346552122', 50254,'Software Engineer' , 'employee', 20, '2024-01-22 10:29:46.295+05:30', '2024-02-06 16:34:58.018+05:30', NULL, 'https://images.ctfassets.net/h6goo9gw1hh6/2sNZtFAWOdP1lmQ33VwRN3/24e953b920a9cd0ff2e1d587742a2472/1-intro-photo-final.jpg?w=1200&h=992&q=70&fm=webp'),
 (3, 'DummyName2', 'dummyname2@example.com', '$2b$10$An28zw2UoQtUvpK46fSFiOrGcfHQOnrJzxPxGbMEEESHwzekkITCe', '8207108173', 1469,'Software Engineer' , 'admin', 20, '2024-01-19 12:42:27.744+05:30', '2024-01-19 12:42:27.744+05:30', NULL, 'https://images.ctfassets.net/h6goo9gw1hh6/2sNZtFAWOdP1lmQ33VwRN3/24e953b920a9cd0ff2e1d587742a2472/1-intro-photo-final.jpg?w=1200&h=992&q=70&fm=webp'),
 (44, 'Admin 1', 'admin1@gmail.com', '$2b$10$UuF2oMbU3xvWlm7cOT0Whe.wNWE1XtRIrIREC6QW/jgLoaIaNHOk2', '9226028117', 12000, 'Software Engineer' ,'admin', 20, '2024-01-19 12:57:28.506+05:30', '2024-02-06 17:33:23.977+05:30', NULL, 'https://images.ctfassets.net/h6goo9gw1hh6/2sNZtFAWOdP1lmQ33VwRN3/24e953b920a9cd0ff2e1d587742a2472/1-intro-photo-final.jpg?w=1200&h=992&q=70&fm=webp'),
-(1, 'Superadmin', 'superadmin@gmail.com', '$2b$10$fWB.DZsK69Qo35vPmDSJY.BaoWZ1NPE5ocXWrzLto8mCnLQGwAlI2', '9876543123', 1200, 'Chief Executive Officer' ,'superadmin', 20, '2024-01-19 12:36:52.589+05:30', '2024-02-06 13:00:55.362+05:30', NULL, 'https://dentalia.orionthemes.com/demo-1/wp-content/uploads/2016/10/dentalia-demo-deoctor-3-1-750x750.jpg');
+(1, 'Superadmin', 'superadmin@gmail.com', '$2b$10$fWB.DZsK69Qo35vPmDSJY.BaoWZ1NPE5ocXWrzLto8mCnLQGwAlI2', '9226028117', 1200, 'Chief Executive Officer' ,'superadmin', 20, '2024-01-19 12:36:52.589+05:30', '2024-02-06 13:00:55.362+05:30', NULL, 'https://dentalia.orionthemes.com/demo-1/wp-content/uploads/2016/10/dentalia-demo-deoctor-3-1-750x750.jpg');
 
 
 INSERT INTO "Leaves" (id, reason, dates, status, "rejectionReason", "createdAt", "updatedAt", "deletedAt", "employeeId")
 VALUES 
-(53, 'Personal work.', '{2024-02-12,2024-02-13}', 'Under Process', NULL, '2024-02-07 11:04:58.904+05:30', '2024-02-07 11:04:58.904+05:30', NULL, 56),
-(54, 'Home Visit', '{2024-02-14,2024-02-15}', 'Under Process', NULL, '2024-02-07 11:06:14.53+05:30', '2024-02-07 11:06:14.53+05:30', NULL, 56),
-(55, 'Have to attend a hackathaon.', '{2024-02-22,2024-02-23}', 'Under Process', NULL, '2024-02-07 11:07:47.207+05:30', '2024-02-07 11:07:47.207+05:30', NULL, 56),
-(56, 'I have to attend a family funciton.', '{2024-03-04,2024-03-05,2024-03-06,2024-03-07}', 'Under Process', NULL, '2024-02-07 11:10:11.763+05:30', '2024-02-07 11:10:11.763+05:30', NULL, 44),
-(57, 'Personal work.', '{2024-02-22}', 'Under Process', NULL, '2024-02-07 11:10:47.618+05:30', '2024-02-07 11:10:47.618+05:30', NULL, 44),
-(58, 'Have an appointment with doctor.', '{2024-02-23}', 'Under Process', NULL, '2024-02-07 11:11:35.475+05:30', '2024-02-07 11:11:35.475+05:30', NULL, 44);
+(53, 'Personal work.', '{2024-05-12,2024-05-13}', 'Under Process', NULL, '2024-02-07 11:04:58.904+05:30', '2024-02-07 11:04:58.904+05:30', NULL, 56),
+(54, 'Home Visit', '{2024-05-14,2024-05-15}', 'Under Process', NULL, '2024-02-07 11:06:14.53+05:30', '2024-02-07 11:06:14.53+05:30', NULL, 56),
+(55, 'Have to attend a hackathaon.', '{2024-05-22,2024-05-23}', 'Under Process', NULL, '2024-02-07 11:07:47.207+05:30', '2024-02-07 11:07:47.207+05:30', NULL, 56),
+(56, 'I have to attend a family funciton.', '{2024-06-04,2024-06-05,2024-06-06,2024-03-07}', 'Under Process', NULL, '2024-02-07 11:10:11.763+05:30', '2024-02-07 11:10:11.763+05:30', NULL, 44),
+(57, 'Personal work.', '{2024-06-22}', 'Under Process', NULL, '2024-02-07 11:10:47.618+05:30', '2024-02-07 11:10:47.618+05:30', NULL, 44),
+(58, 'Have an appointment with doctor.', '{2024-06-23}', 'Under Process', NULL, '2024-02-07 11:11:35.475+05:30', '2024-02-07 11:11:35.475+05:30', NULL, 44);
