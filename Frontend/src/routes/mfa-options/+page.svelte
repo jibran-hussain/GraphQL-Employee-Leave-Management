@@ -44,7 +44,7 @@
 
             const responseBody=await response.json();
             if(response.ok){
-                goto(`/verify-otp`)
+                goto(`/verify-otp?${emailOtp?'email=true':'sms=true'}`)
             }else{
                 toast.error(responseBody.error,{
                     duration:3000
@@ -67,10 +67,10 @@
                         {#each mfaOptions as option }
                             <li class="list-group-item d-flex justify-content-between align-items-center mfa-option ">
                                 {#if option === 'emailOtp'}
-                                    <span on:click={()=>sendOtp(employeeId,true,false)}>Send email to the registered email id</span>
+                                    <span on:click={()=>sendOtp(employeeId,true,false)}>Send OTP via email to the registered email id</span>
                                     <i class="bi bi-envelope-fill" ></i>
                                 {:else if option === 'smsOtp' }
-                                    <span>Send OTP via SMS</span>
+                                    <span on:click={()=>sendOtp(employeeId,false,true)}>Send OTP via SMS to the registered mobile number</span>
                                     <i class="bi bi-chat-left-text-fill"></i>
                                 {:else if option === 'totp' }
                                     <span>Scan the QR code</span>
