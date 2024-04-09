@@ -1,11 +1,11 @@
 <script>
     import { onDestroy, onMount } from "svelte";
+    import queryString from 'query-string';
     import { decodeJwtToken } from "../utils/decodeJwtToken.js";
     import { user } from "../stores/userStore.js";
     import {preAuthEmployeeId} from '../stores/preAuthEmployeeId.js'
     import {goto} from '$app/navigation'
     import toast, { Toaster } from "svelte-french-toast";
-    import Navbar from '../Components/Navbar.svelte'
 
 
     let otp;
@@ -13,6 +13,8 @@
     let timerValue = 5;
     let timer=timerValue;;
     let showResendOtpLink=false;
+    let email;
+    let sms;
 
     const sendTimer=()=>{
         showResendOtpLink=false;
@@ -35,7 +37,7 @@
                     Accept: "application/json",
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({token:otp}),
+                body: JSON.stringify({token:otp,sms,email}),
                 });
                 let responseBody=await response.json()
                 if(response.ok){
@@ -83,6 +85,8 @@
     }
 
     onMount(()=>{
+        email = queryString.parse(location.search).email;
+        sms = queryString.parse(location.search).sms;
         if(!$preAuthEmployeeId) goto('/')
         employeeId = $preAuthEmployeeId;
         sendTimer();
@@ -101,10 +105,10 @@
                 <div>
                     <p class="text-center text-success" style="font-size: 5.5rem;"><i class="fa-solid fa-envelope-circle-check"></i></p>
                     <p class="text-center text-center h5 ">Please check your email</p>
-                    <p class="text-muted text-center">We've sent a OTP to your email address</p>
+                    <p class="text-muted text-center">We've sent a OTP to your registered {email? 'email address': 'mobile number'}</p>
                   
                     {#if showResendOtpLink}
-                    <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>resendOtp(employeeId,true,false)}>Click to resend.</a></p>
+                    <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>email?resendOtp(employeeId,true,false):resendOtp(employeeId,false,true)}>Click to resend.</a></p>
                     {:else}
                     <p class="text-muted text-center">Resend OTP link will be available in {Math.floor(timer/60) === 0?'':`${Math.floor(timer/60)} minutes`} {Math.floor((timer % 60))} seconds</p>
                     {/if}
