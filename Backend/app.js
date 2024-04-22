@@ -29,7 +29,6 @@ await sequelize.sync()
 
 
 const openAPIFilePath=path.join(__dirname,'src','openapi','OpenAPI_doc.yml');
-console.log(openAPIFilePath,'here is the openAPI file path')
 
 
 app.use(connectToDB)
