@@ -73,7 +73,7 @@
                                     <span on:click={()=>sendOtp(employeeId,false,true)}>Send OTP via SMS to the registered mobile number</span>
                                     <i class="bi bi-chat-left-text-fill"></i>
                                 {:else if option === 'totp' }
-                                    <span>Scan the QR code</span>
+                                    <span on:click={()=>goto(`/verify-otp?totp=true`)}>Verify using TOTP</span>
                                     <i class="bi bi-camera2-fill"></i>
                                 {/if}
                             </li>

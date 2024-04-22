@@ -15,10 +15,12 @@
     let showResendOtpLink=false;
     let email;
     let sms;
+    let totp;
 
     const sendTimer=()=>{
         showResendOtpLink=false;
-        setInterval(()=>{
+        if(!totp){
+            setInterval(()=>{
             if(timer <= 1){
                 showResendOtpLink=true;
                 clearInterval(sendTimer)
@@ -27,6 +29,7 @@
             }
             
         },1000)
+        }
     }
 
     const handleSubmit=async()=>{
@@ -37,7 +40,7 @@
                     Accept: "application/json",
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({token:otp,sms,email}),
+                body: JSON.stringify({token:otp,sms,email,totp}),
                 });
                 let responseBody=await response.json()
                 if(response.ok){
@@ -87,6 +90,7 @@
     onMount(()=>{
         email = queryString.parse(location.search).email;
         sms = queryString.parse(location.search).sms;
+        totp = queryString.parse(location.search).totp;
         if(!$preAuthEmployeeId) goto('/')
         employeeId = $preAuthEmployeeId;
         sendTimer();
@@ -104,13 +108,27 @@
             <div class="bg-white p-5 rounded-3 shadow-sm border">
                 <div>
                     <p class="text-center text-success" style="font-size: 5.5rem;"><i class="fa-solid fa-envelope-circle-check"></i></p>
-                    <p class="text-center text-center h5 ">Please check your email</p>
-                    <p class="text-muted text-center">We've sent a OTP to your registered {email? 'email address': 'mobile number'}</p>
-                  
-                    {#if showResendOtpLink}
-                    <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>email?resendOtp(employeeId,true,false):resendOtp(employeeId,false,true)}>Click to resend.</a></p>
+                    <p class="text-center text-center h5 ">
+                    {#if totp}
+                        Please open your authenticator app
                     {:else}
-                    <p class="text-muted text-center">Resend OTP link will be available in {Math.floor(timer/60) === 0?'':`${Math.floor(timer/60)} minutes`} {Math.floor((timer % 60))} seconds</p>
+                        We've sent a OTP to your registered {email? 'email address': 'mobile number'}
+                    {/if}
+                    </p>
+                    <p class="text-muted text-center">
+                    {#if totp}
+                        Enter the code in displayed on your authenticator app
+                   
+                    {/if}
+                    
+                    </p>
+                  
+                    {#if !totp}
+                        {#if showResendOtpLink }
+                            <p class="text-muted text-center">Didn't get the code? <a href="#" class="text-success" on:click={()=>email?resendOtp(employeeId,true,false):resendOtp(employeeId,false,true)}>Click to resend.</a></p>
+                        {:else}
+                            <p class="text-muted text-center">Resend OTP link will be available in {Math.floor(timer/60) === 0?'':`${Math.floor(timer/60)} minutes`} {Math.floor((timer % 60))} seconds</p>
+                        {/if}
                     {/if}
 
                     <div class="row pt-4 pb-2 ">
