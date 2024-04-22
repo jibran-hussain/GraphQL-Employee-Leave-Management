@@ -9,6 +9,8 @@
     let sendOtpOverEmailOption = false;
     let sendOtpOverSmsOption = false;
     let scanTotpQrCodeOptions = false;
+    let totpQrCodeUrl;
+    let totpSecret;
   
     function toggleMfa() {
       isMfaEnabled = !isMfaEnabled;
@@ -30,8 +32,27 @@
       sendOtpOverSmsOption = !sendOtpOverSmsOption;
     }
   
-    function toggleTotpOption() {
+    const toggleTotpOption = async() => {
+
       scanTotpQrCodeOptions = !scanTotpQrCodeOptions;
+
+      if(scanTotpQrCodeOptions){
+        try{
+            const response = await fetch(`http://localhost:3000/api/v1/totp-details`, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                }
+            });
+                const responseBody=await response.json();
+                totpQrCodeUrl = responseBody.qrCodeUrl;
+                totpSecret = responseBody.totpSecret;
+                
+        }catch(error){
+            console.log(error.message)
+        }
+      }
     }
 
     const getMfaDetails = async(employeeId)=>{
@@ -67,6 +88,8 @@
                     smsOtp: sendOtpOverSmsOption,
                     totp: scanTotpQrCodeOptions
                 }
+                
+                if(totpSecret) updatedMfaSettings.totpSecret = totpSecret;
 
             const response = await fetch(`http://localhost:3000/api/v1/mfa-settings`, {
             method: "PATCH",
@@ -136,7 +159,11 @@
           </div>
   
           <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="totpSwitch" bind:checked={scanTotpQrCodeOptions} on:click={toggleTotpOption}>
+            {#if scanTotpQrCodeOptions}
+              <input class="form-check-input" type="checkbox" role="switch" id="totpSwitch" bind:checked={scanTotpQrCodeOptions} on:click={toggleTotpOption} />
+            {:else}
+              <input class="form-check-input" type="checkbox" role="switch" id="totpSwitch" bind:checked={scanTotpQrCodeOptions} on:click={toggleTotpOption}  data-bs-toggle="modal" data-bs-target="#exampleModal">
+            {/if}
             <label class="form-check-label" for="totpSwitch">
               Authorize using Authenticator
             </label>
@@ -146,5 +173,26 @@
       </div>
     </div>
   </div>
-  
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Scan the QR Code using any authenticator app</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        {#if totpQrCodeUrl}
+          <img src={totpQrCodeUrl} alt="QR-Code" />
+        {/if}
+      </div>
+      <div class="modal-footer d-flex justify-content-between align-items-center">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" on:click={()=>scanTotpQrCodeOptions = false}>Close</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I have scanned the QR code</button>
+      </div>
+    </div>
+  </div>
+</div>
   
