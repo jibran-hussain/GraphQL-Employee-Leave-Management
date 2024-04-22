@@ -39,6 +39,9 @@ const Otp=sequelize.define('Otp',{
     smsOtplastResendAttempt:{
         type: DataTypes.DATE
     },
+    totpSecret:{
+        type: DataTypes.STRING
+    }
 })
 
 export default Otp;
