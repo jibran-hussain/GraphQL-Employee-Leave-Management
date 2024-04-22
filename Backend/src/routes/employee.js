@@ -1,5 +1,5 @@
 import express from 'express'
-import {deleteEmployee,listAllEmployees,activateAccount,getLoggedUsersDetails,updateProfile,getEmployeeDetails,updateEmployeeProfile,updatedProfileByPutMethod,updateEmployeeProfileByPut,resetPassword, deleteMe,manageMfaSettings,verifyOTP,getMfaDetailsofUser,sendOTP,resendOTP} from '../controllers/employee.js'
+import {deleteEmployee,listAllEmployees,activateAccount,getLoggedUsersDetails,updateProfile,getEmployeeDetails,updateEmployeeProfile,updatedProfileByPutMethod,updateEmployeeProfileByPut,resetPassword, deleteMe,manageMfaSettings,verifyOTP,getMfaDetailsofUser,sendOTP,resendOTP,getTotpDetailForUser} from '../controllers/employee.js'
 import { isAuth } from '../middlewares/isAuth.js';
 import { isAdminOrSuperadmin } from '../middlewares/isAdminOrSuperadmin.js';
 const router=express.Router();
@@ -18,7 +18,6 @@ router.put("/employees/:employeeId",isAuth,isAdminOrSuperadmin,updateEmployeePro
 
 
 // Route which everyone can access
-
 router.get('/me',isAuth,getLoggedUsersDetails);
 
 router.patch('/me',isAuth,updateProfile);
@@ -46,6 +45,9 @@ router.post('/otp/verify',verifyOTP);
 
 // Get Multi-factor Authentication details of an employee
 router.get('/mfa-details',getMfaDetailsofUser);
+
+// Get TOTP (Time bassed OTP) details for Employee
+router.get('/totp-details', getTotpDetailForUser)
 
 
 
