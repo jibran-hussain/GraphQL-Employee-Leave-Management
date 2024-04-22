@@ -13,6 +13,8 @@ import { generateEmailOtp } from '../utils/OTP/generateOtp.js';
 import { emailOtpConfig,smsOtpConfig } from '../config/otp.js';
 import sendEmail from '../utils/email/sendEmail.js';
 import sendSms from '../utils/sms/sendSms.js'
+import speakeasy from 'speakeasy';
+import QRCode from 'qrcode';
 
 
 // This method gives the list of all active and deactivated employees.
@@ -458,7 +460,9 @@ export const manageMfaSettings= async(req,res)=>{
 
         const employee = await Employee.findByPk(employeeId);
 
-        const {enableMfa,emailOtp,smsOtp,totp} = req.body;
+        const {enableMfa,emailOtp,smsOtp,totp, totpSecret} = req.body;
+
+        console.log(req.body,'totp')
 
         // Update MFA settings based on enableMfa flag
         if(enableMfa){
@@ -487,6 +491,14 @@ export const manageMfaSettings= async(req,res)=>{
                     id: employeeId
                 }   
             })
+
+            if(totpSecret){
+                await Otp.update({totpSecret},{
+                    where:{
+                        employeeId
+                    }   
+                })
+            }
         }else{
             // Disable MFA for the employee and reset all MFA options
             await Employee.update({mfaEnabled:false,mfaSettings: {...employee.mfaSettings,emailOtp:false, smsOtp:false, totp:false}},{
@@ -511,7 +523,7 @@ export const sendOTP = async(req,res)=>{
 
         if(!employee) return res.status(404).json({error: `Employee with this id does not exist`});
 
-        const {emailOtp,smsOtp} = req.body;
+        const {emailOtp,smsOtp,totp} = req.body;
 
         const otp = generateEmailOtp();
 
@@ -538,7 +550,6 @@ export const sendOTP = async(req,res)=>{
         }else if(smsOtp){
             // If the OTP is to be sent over the SMS
 
-            console.log('i am in sms')
             const smsOtpExpiry = new Date(Date.now() + smsOtpConfig.expiryTime);
 
             const isSmsOtpExisting = await Otp.findByPk(employee.id);
@@ -642,7 +653,6 @@ export const resendOTP=async(req,res)=>{
              // If the OTP is to be sent over email
             
             // Generating the OTP for email
-            console.log('in smsOtp')
             const otp = generateEmailOtp();
 
             // Setting the OTP expiry time
@@ -705,7 +715,7 @@ export const verifyOTP=async(req,res)=>{
 
         if(!employee) return res.status(404).json({error: `Employee with this id does not exist`});
 
-        const {token,sms,email} = req.body;
+        const {token,sms,email, totp} = req.body;
 
         // Verifying the otp
         const otpDetailsOfEmployee = await Otp.findByPk(employeeId);
@@ -714,8 +724,22 @@ export const verifyOTP=async(req,res)=>{
         if(!otpDetailsOfEmployee) return res.status(400).json({error: 'Incorrect OTP'})
 
         const currentDate = new Date(Date.now());
+
+        if(totp){
+            const isVerified = speakeasy.totp.verify({
+                secret: otpDetailsOfEmployee.totpSecret,
+                encoding: 'hex',
+                token
+            })
+    
+            if(isVerified){
+                const jwtToken=generateAuthToken(employee.id,employee.email,employee.role)
+                return res.json({ jwtToken })
+            }
+            else return res.status(400).json({error: 'Incorrect OTP'})
+        }
         
-        if(email && otpDetailsOfEmployee.emailOtp === token && currentDate < otpDetailsOfEmployee.emailOtpExpiry){
+        else if(email && otpDetailsOfEmployee.emailOtp === token && currentDate < otpDetailsOfEmployee.emailOtpExpiry){
             await Otp.update({emailOtpResendAttemptsCount:0,emailOtpFirstResendAttempt:null,emailOtplastResendAttempt:null},{
                 where:{
                     employeeId:employee.id
@@ -770,6 +794,21 @@ export const getMfaDetailsofUser=async(req,res)=>{
 
     }catch(error){
         console.log(`Error in getMfaDetails`,error)
+        return res.status(500).json({error:error.message});
+    }
+}
+
+export const getTotpDetailForUser =async(req,res)=>{
+    try{
+        const secret = speakeasy.generateSecret({
+            name:'Totp Generator'
+        });
+        console.log(secret)
+        const qrCodeUrl =  await QRCode.toDataURL(secret.otpauth_url)
+        return res.json({qrCodeUrl,totpSecret: secret.hex});
+        
+    }catch(error){
+        console.log(`Error in getTotpDetailForUser`,error)
         return res.status(500).json({error:error.message});
     }
 }
